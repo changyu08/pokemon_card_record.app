@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#f4efe6">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="포켓몬 카드 전적 일지">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>포켓몬 카드 전적 일지</title>
+<style>
+@font-face{font-family:MuseumFont;src:url('pokemon-bw.otf') format('opentype')}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:MuseumFont,Georgia,serif;background:#f4efe6;color:#332d27;padding-bottom:88px;font-weight:normal}
+button,input,select,textarea{font-family:inherit}
+.app-header{background:#fbf9f4;border-bottom:2px solid #d8c39d;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 10px rgba(74,62,46,.08)}
+.app-header h1{color:#8b6b23;font-size:20px;letter-spacing:1px;text-shadow:1px 1px 0 #fffdf9}
+.nav-tabs{display:flex;gap:6px;margin-top:12px}.nav-tab{flex:1;padding:8px;border:1px solid #d8c39d;background:#f7f2e7;color:#8b6b23;border-radius:3px;cursor:pointer}.nav-tab.active{background:#b8860b;color:#fff;border-color:#9e7817}
+.main-container{padding:16px;max-width:760px;margin:0 auto}.page{display:none}.page.active{display:block}
+.dashboard-card,.panel{background:#fbf9f4;border:2px solid #ebdcb9;outline:1px solid #d8c39d;border-radius:4px;padding:16px;margin-bottom:16px;box-shadow:0 4px 12px rgba(74,62,46,.06)}
+.dash-title,.panel-title{color:#8b6b23;font-size:15px;margin-bottom:12px;letter-spacing:1px}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat-box{background:#f7f2e7;padding:10px 4px;border-radius:3px;border:1px solid #ebdcb9;text-align:center}.stat-value{font-size:18px;color:#b8860b;margin-top:4px}.stat-label{font-size:11px;color:#8b6b23}
+.status-banner{background:#f7f2e7;border:1px solid #ebdcb9;color:#8b6b23;padding:8px 12px;border-radius:4px;font-size:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}.filter-section{background:#f7f2e7;border:1px solid #ebdcb9;border-radius:4px;padding:12px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}.filter-row{display:flex;gap:8px}.input-field,.select-field{width:100%;padding:9px 10px;border:1px solid #d8c39d;border-radius:3px;background:#fffdf9;color:#4a3e2e;font-size:13px;outline:none}.input-field:focus,.select-field:focus{border-color:#b8860b;box-shadow:0 0 4px rgba(184,134,11,.3)}
+.btn{padding:10px 16px;background:linear-gradient(135deg,#c59b27,#9e7817);color:#fff;border:none;border-radius:4px;cursor:pointer;letter-spacing:1px;font-size:13px;box-shadow:0 2px 4px rgba(0,0,0,.1)}.btn:hover{background:linear-gradient(135deg,#d4af37,#b8860b)}.btn-secondary{background:#8c7f6b}.btn-danger{background:#8b4b3f}.btn-small{padding:6px 10px;font-size:11px}.btn-block{width:100%}.button-row{display:flex;gap:8px}.button-row>*{flex:1}
+.result-info{font-size:11px;color:#8b6b23;margin:6px 2px 10px}.empty-state{text-align:center;padding:38px 16px;color:#8c7f6b;border:1px dashed #d8c39d;background:#fbf9f4;border-radius:4px}
+.match-card{background:#fbf9f4;border-radius:4px;border:1px solid #d8c39d;border-left:6px solid #b8860b;margin-bottom:12px;padding:12px;box-shadow:0 4px 10px rgba(74,62,46,.05);cursor:pointer}.match-card.win{border-left-color:#b8860b;background:#fdfbf7}.match-card.loss{border-left-color:#8c7f6b;background:#f7f4ee}.match-header{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:#8b6b23;margin-bottom:8px}.match-type-tag{background:#ebdcb9;color:#5c4718;padding:2px 6px;border-radius:3px;font-size:10px;margin-right:4px}.match-badge{padding:3px 8px;border-radius:3px;font-size:11px;color:#fff;letter-spacing:1px}.match-badge.win{background:linear-gradient(135deg,#c59b27,#9e7817)}.match-badge.loss{background:#8c7f6b}.match-body{display:flex;align-items:center;justify-content:space-between;gap:8px}.team-box{display:flex;align-items:center;gap:4px}.vs-text{font-size:14px;color:#b8860b;letter-spacing:1px}.sticker-icon{width:40px;height:30px;background-image:url('pokemonicons-sheet.jpg');background-repeat:no-repeat;image-rendering:pixelated;border:1px solid #e2d7c5;border-radius:3px;display:inline-block;background-color:#fffdf9;flex:none}.match-details{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #d8c39d;font-size:12px;color:#4a3e2e}.match-details.open{display:block}.match-details-item{margin-bottom:5px}.match-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #eee3d0}.tag-list{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.tag{font-size:10px;padding:3px 6px;border:1px solid #d8c39d;border-radius:10px;background:#f7f2e7;color:#6b5a3c}
+.group-card{background:#fbf9f4;border:2px solid #d8c39d;border-radius:5px;margin-bottom:14px;overflow:hidden;box-shadow:0 4px 10px rgba(74,62,46,.05)}
+.group-card-header{padding:12px;background:#f7f2e7;border-bottom:1px solid #ebdcb9;display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.group-title{color:#8b6b23;font-size:13px;line-height:1.5}.group-summary{font-size:11px;color:#6b5a3c;margin-top:3px}.group-records{padding:8px}.group-match-card{margin-bottom:8px}.group-match-card:last-child{margin-bottom:0}.group-record{background:#fffdf9;border:1px solid #ebdcb9;border-radius:4px;padding:9px;margin-bottom:7px}.group-record:last-child{margin-bottom:0}.group-record-main{display:flex;align-items:center;justify-content:space-between;gap:8px}.group-stage{min-width:62px;color:#8b6b23;font-size:11px;font-weight:bold}.group-record-result{font-size:11px;color:#6b5a3c}.group-record-result.win{color:#9e7817}.group-record-result.loss{color:#8c7f6b}.group-record-pokemon{display:flex;gap:3px;margin-left:auto}.group-record-pokemon .sticker-icon{width:40px;height:30px}.group-record-actions{display:flex;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed #eadfcd}.group-empty{padding:10px;color:#8c7f6b;font-size:11px}
+.entry-group-box{background:#f7f2e7;border:1px solid #ebdcb9;border-radius:4px;padding:9px}.entry-group-row{display:flex;gap:7px;align-items:center}.entry-group-row>*{min-width:0}.entry-group-help{font-size:10px;color:#8c7f6b;line-height:1.5;margin-top:5px}.choice-button-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.choice-button{width:100%;min-height:44px;padding:9px 10px;border:1px solid #d8c39d;border-radius:4px;background:#fffdf9;color:#6b5a3c;font-family:inherit;font-size:13px;cursor:pointer;transition:.15s;touch-action:manipulation}.choice-button.active{background:#b8860b;border-color:#9e7817;color:#fff;box-shadow:0 2px 4px rgba(74,62,46,.12)}.choice-button:focus-visible{outline:2px solid #8b6b23;outline-offset:2px}
+.entry-game-info-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,170px);gap:8px;align-items:end;margin-bottom:10px}.entry-game-info-row .form-group{margin-bottom:0}.prize-compact{max-width:170px}.prize-input-row{display:grid;grid-template-columns:58px 12px 58px;gap:4px;align-items:center}.prize-input-row .input-field{width:58px;min-width:0;text-align:center;padding-left:5px;padding-right:5px}.prize-colon{text-align:center;color:#8b6b23}.winrate-tier-0{color:#8c7f6b!important}.winrate-tier-20{color:#6b7280!important}.winrate-tier-40{color:#5b7c99!important}.winrate-tier-60{color:#8b6b23!important}.winrate-tier-80{color:#a06a22!important}.winrate-tier-100{color:#b8860b!important}
+@media(max-width:520px){.group-card-header{padding:10px}.group-record{padding:8px}.group-record-main{align-items:flex-start}.group-stage{min-width:54px}.entry-group-row{display:grid;grid-template-columns:minmax(0,1fr) auto}.entry-group-row .btn{width:auto;white-space:nowrap}.group-record-pokemon .sticker-icon{width:38px;height:29px}}
+
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;height:64px;background:#fbf9f4;border-top:2px solid #d8c39d;display:flex;justify-content:center;align-items:center;padding:0 16px;z-index:100;box-shadow:0 -4px 10px rgba(74,62,46,.05)}
+.modal{display:none;position:fixed;inset:0;background:rgba(51,45,39,.6);z-index:600;justify-content:center;align-items:center;padding:16px}.modal.active{display:flex}.modal-content{background:#fbf9f4;border-radius:4px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:18px;border:2px solid #d8c39d;box-shadow:0 8px 20px rgba(74,62,46,.15)}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.modal-close{cursor:pointer;font-size:22px;color:#8b6b23}.form-group{margin-bottom:12px}.form-group label{display:block;font-size:12px;color:#8b6b23;margin-bottom:4px}.textarea-field{min-height:72px;resize:vertical}.sticker-selector-btn{display:flex;gap:6px;align-items:center;background:#fffdf9;border:1px solid #d8c39d;padding:6px;border-radius:3px;cursor:pointer}.sticker-grid-modal{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:260px;overflow-y:auto;border:1px solid #d8c39d;padding:6px;background:#fffdf9;border-radius:3px;margin-top:6px}.picker-status-bar{display:flex;align-items:center;justify-content:space-between;background:#f7f2e7;border:1px solid #ebdcb9;padding:6px 10px;border-radius:3px;margin-top:8px;font-size:12px;color:#8b6b23}.picker-slot{position:relative}.remove-slot{position:absolute;right:-4px;top:-6px;width:16px;height:16px;border-radius:50%;border:0;background:#8b4b3f;color:#fff;font-size:10px;cursor:pointer}
+.stat-table{width:100%;border-collapse:collapse;font-size:12px}.stat-table th,.stat-table td{padding:8px 5px;border-bottom:1px solid #eadfcd;text-align:center}.stat-table th{color:#8b6b23;font-weight:normal;background:#f7f2e7}.stat-table td:first-child,.stat-table th:first-child{text-align:left}.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.metric{background:#f7f2e7;border:1px solid #ebdcb9;border-radius:3px;padding:10px}.metric-label{font-size:10px;color:#8b6b23}.metric-value{font-size:17px;color:#b8860b;margin-top:4px}.bar-row{margin:8px 0}.bar-label{display:flex;justify-content:space-between;font-size:11px;color:#6b5a3c}.bar-track{height:8px;background:#e9dfce;border-radius:5px;overflow:hidden;margin-top:4px}.bar-fill{height:100%;background:#b8860b}.chart-wrap{height:180px;display:flex;align-items:flex-end;gap:5px;border-bottom:1px solid #d8c39d;padding:10px 4px 0}.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}.chart-bar{width:70%;background:#b8860b;min-height:2px}.chart-label{font-size:9px;color:#8b6b23;margin-top:4px;white-space:nowrap}.chart-value{font-size:9px;color:#6b5a3c;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(20px);background:#4a3e2e;color:#fff;padding:9px 14px;border-radius:4px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:500}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:520px){.stats-grid{grid-template-columns:repeat(2,1fr)}.filter-row{flex-direction:column}.match-header{align-items:flex-start}.metric-grid{grid-template-columns:1fr}}
+</style>
+<style id="pwa-mobile-style">
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+body{min-height:100dvh;padding-top:var(--safe-top);padding-bottom:calc(132px + var(--safe-bottom));overscroll-behavior-y:none}
+.mobile-nav{display:none}
+@media(max-width:520px){
+  .app-header{padding-top:calc(10px + var(--safe-top));position:sticky}
+  .nav-tabs{display:none}
+  .main-container{padding:10px 10px calc(20px + 72px + var(--safe-bottom))}
+  .dashboard-card,.panel{padding:12px;margin-bottom:12px}
+  .btn,.input-field,.select-field{min-height:46px}
+  .button-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .button-row > *{min-width:0;width:100%}
+  .match-card{padding:11px;margin-bottom:10px}
+  .match-header{gap:6px;line-height:1.45}
+  .match-body{gap:6px}
+  .team-box{gap:3px}
+  .sticker-icon{width:38px;height:29px}
+  .modal{padding:0;align-items:flex-end}
+  .modal-content{width:100%;max-width:none;max-height:90dvh;border-radius:14px 14px 0 0;padding:14px 12px calc(30px + var(--safe-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .modal-header{position:sticky;top:-14px;background:#fbf9f4;padding:10px 0 12px;margin-bottom:10px;z-index:2}
+  .form-group{margin-bottom:10px}
+  .form-group label{font-size:12px;margin-bottom:5px}
+  .form-group > .input-field,.form-group > .select-field{width:100%}
+  /* 입력 항목은 관련된 선택지끼리 2열로 묶어 세로 길이를 줄인다. */
+  .entry-two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px}
+  .entry-two-col .input-field,.entry-two-col .select-field{min-width:0}
+  .entry-two-col .form-group{margin-bottom:0;min-width:0}
+  .entry-two-col .form-group label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .entry-game-info-row{grid-template-columns:minmax(0,1fr) 132px;gap:7px}
+  .entry-game-info-row .choice-button-group{gap:6px}
+  .entry-game-info-row .choice-button{padding-left:6px;padding-right:6px;font-size:12px}
+  .prize-compact label{white-space:nowrap}
+  .prize-compact{max-width:170px}.prize-input-row{grid-template-columns:58px 9px 58px;gap:3px}.prize-input-row .input-field{width:58px}
+  .sticker-selector-btn{min-height:54px;padding:7px}
+  .sticker-selector-btn .sticker-icon{width:38px;height:29px}
+  .sticker-grid-modal{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;max-height:43dvh;padding:5px}
+  .picker-status-bar{min-height:42px}
+  .mobile-nav{display:grid;grid-template-columns:repeat(3,1fr);position:fixed;z-index:400;left:0;right:0;bottom:0;height:calc(64px + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(251,249,244,.98);border-top:2px solid #d8c39d;box-shadow:0 -4px 14px rgba(74,62,46,.08)}
+  .mobile-nav button{border:0;background:transparent;color:#8c7f6b;font-family:inherit;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;min-height:44px}
+  .mobile-nav button.active{color:#8b6b23;background:#f7f2e7}
+  .mobile-nav .nav-icon{font-family:Georgia,serif;font-size:19px;line-height:1}
+  .bottom-bar{bottom:calc(64px + var(--safe-bottom));height:58px;box-shadow:none;padding:0 10px}
+  .bottom-bar .btn{min-height:46px}
+  #match-modal .button-row{margin-top:4px;padding-top:4px;padding-bottom:2px}
+  #match-modal #entry-save-btn,#match-modal #entry-cancel-btn{min-height:48px}
+  .toast{bottom:calc(132px + var(--safe-bottom))}
+  /* 첫 화면에서는 경기 유형만 필터링 */
+  .filter-section .filter-row{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}
+  .filter-section .filter-row > *{min-width:0;width:100%}
+  /* 통계 기간 선택지도 2열 */
+  #page-stats .filter-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  #page-stats .filter-row > *{min-width:0}
+}
+@media(min-width:521px){body{padding-bottom:78px}}
+</style>
+</head>
+<body>
+<header class="app-header"><h1>포켓몬 카드 전적 일지</h1><div class="nav-tabs"><button id="tab-records" class="nav-tab active" onclick="switchPage('records')">전적 기록</button><button id="tab-stats" class="nav-tab" onclick="switchPage('stats')">통계</button><button id="tab-data" class="nav-tab" onclick="switchPage('data')">데이터 관리</button></div></header>
+<main class="main-container">
+<section id="page-records" class="page active">
+<div id="dex-status-banner" class="status-banner"><span>전국도감 검사 중...</span></div>
+<div class="dashboard-card"><div class="dash-title">간단 전적</div><div class="stats-grid"><div class="stat-box"><div class="stat-label">전체 경기</div><div id="stat-total" class="stat-value">0</div></div><div class="stat-box"><div class="stat-label">승률</div><div id="stat-winrate" class="stat-value">0%</div></div><div class="stat-box"><div class="stat-label">최근 10경기</div><div id="stat-recent" class="stat-value">-</div></div><div class="stat-box"><div class="stat-label">현재 흐름</div><div id="stat-streak" class="stat-value">-</div></div></div></div>
+<div class="filter-section">
+<div class="filter-row"><select id="filter-category" class="select-field"><option value="ALL">모든 경기 유형</option><option value="MATCH_LEAGUE">미니리그만 보기</option><option value="MATCH_FRIENDLY">친선전만 보기</option><option value="MATCH_TOURNAMENT">대회만 보기</option><option value="EXCEPT_LEAGUE">미니리그 제외</option><option value="EXCEPT_FRIENDLY">친선전 제외</option><option value="EXCEPT_TOURNAMENT">대회 제외</option></select></div></div>
+<div id="match-result-info" class="result-info"></div><div id="match-list-container"></div>
+</section>
+<section id="page-stats" class="page">
+<div class="panel"><div class="panel-title">통계 기간</div><div class="button-row" style="margin-bottom:8px"><button class="btn btn-secondary btn-small" onclick="setStatsPreset('ALL')">전체</button><button class="btn btn-secondary btn-small" onclick="setStatsPreset('7')">최근 7일</button><button class="btn btn-secondary btn-small" onclick="setStatsPreset('30')">최근 30일</button><button class="btn btn-secondary btn-small" onclick="setStatsPreset('90')">최근 3개월</button><button class="btn btn-secondary btn-small" onclick="setStatsPreset('YEAR')">올해</button></div><div class="filter-row"><input type="date" id="stats-date-from" class="input-field"><input type="date" id="stats-date-to" class="input-field"></div><div id="stats-scope" class="result-info" style="margin-top:8px"></div></div>
+<div class="panel"><div class="panel-title">종합 전적</div><div id="overall-metrics" class="metric-grid"></div></div>
+<div class="panel"><div class="panel-title">선공 / 후공</div><div id="turn-stats"></div></div>
+<div class="panel"><div class="panel-title">경기 유형별 전적</div><div id="category-stats"></div></div>
+<div class="panel"><div class="panel-title">월별 승률 추이</div><div id="monthly-chart"></div></div>
+<div class="panel"><div class="panel-title">프라이즈 분석</div><div id="prize-stats"></div></div>
+<div class="panel"><div class="panel-title">매장별 전적</div><div id="shop-stats"></div></div>
+<div class="panel"><div class="panel-title">경기 유형 × 선후공</div><div id="cross-stats"></div></div>
+</section>
+<section id="page-data" class="page">
+<div class="panel"><div class="panel-title">데이터 관리</div><div id="data-summary" class="result-info"></div><div class="button-row"><button class="btn" onclick="exportData()">전적 백업하기</button><button class="btn btn-secondary" onclick="document.getElementById('restore-file').click()">전적 복원하기</button></div><input id="restore-file" type="file" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])"></div>
+<div class="panel"><div class="panel-title">데이터 보호</div><p style="font-size:12px;color:#6b5a3c;line-height:1.6;margin-bottom:10px">복원은 기본적으로 기존 기록을 유지하고 백업 파일의 기록을 추가합니다. 동일한 ID가 이미 존재하는 기록은 덮어쓰지 않습니다.</p><button class="btn btn-danger btn-block" onclick="deleteAllMatches()">전체 전적 삭제</button></div>
+</section>
+</main>
+<div class="bottom-bar"><button id="new-record-btn" class="btn btn-block" onclick="openMatchEntryModal()">새 전적 기록하기</button></div>
+<div id="toast" class="toast"></div>
+<!-- match modal -->
+<div id="match-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3 id="entry-modal-title" style="color:#8b6b23;font-weight:normal">새 전적 입력</h3><span class="modal-close" onclick="closeMatchEntryModal()">&times;</span></div>
+<div class="form-group"><label>경기 날짜</label><input type="date" id="entry-date" class="input-field"></div>
+<div class="form-group"><label>카드샵 / 매장명</label><input type="text" id="entry-shop" class="input-field" placeholder="매장명을 입력하세요"></div>
+<div class="entry-two-col">
+<div class="form-group"><label>경기 유형</label><select id="entry-category" class="select-field"><option value="미니리그">미니리그</option><option value="친선">친선</option><option value="대회">대회</option></select></div>
+<div class="form-group"><label>경기 세부 내용</label><input type="text" id="entry-category-detail" class="input-field" placeholder="예: 10월 시즌리그 2라운드"></div>
+</div>
+<div class="form-group"><label>경기 묶음</label><div class="entry-group-box"><div class="entry-group-row"><select id="entry-group" class="select-field"><option value="NEW">새 경기 묶음</option></select><button id="entry-new-group-btn" type="button" class="btn btn-secondary btn-small" onclick="createNewGroupFromEntry()">새 묶음</button></div><div id="entry-group-help" class="entry-group-help">같은 날짜·매장·경기 유형의 기존 묶음이 자동으로 표시됩니다.</div></div></div>
+<div class="entry-two-col">
+<div class="form-group"><label>경기 단계</label><select id="entry-stage" class="select-field"></select></div>
+<div class="form-group"><label>경기 결과</label><input type="hidden" id="entry-result" value="WIN"><div class="choice-button-group" id="entry-result-buttons" role="group" aria-label="경기 결과"><button type="button" class="choice-button active" data-choice-group="result" data-value="WIN">승리 (VICTORY)</button><button type="button" class="choice-button" data-choice-group="result" data-value="LOSS">패배 (DEFEAT)</button></div></div>
+<div class="form-group"><label>선공 / 후공</label><input type="hidden" id="entry-turn" value="FIRST"><div class="choice-button-group" id="entry-turn-buttons" role="group" aria-label="선공 또는 후공"><button type="button" class="choice-button active" data-choice-group="turn" data-value="FIRST">선공</button><button type="button" class="choice-button" data-choice-group="turn" data-value="SECOND">후공</button></div></div>
+<div class="form-group prize-compact"><label>프라이즈 스코어</label><div class="prize-input-row"><input type="number" id="entry-my-prize" class="input-field" value="6" min="0" max="6"><span class="prize-colon">:</span><input type="number" id="entry-op-prize" class="input-field" value="0" min="0" max="6"></div></div>
+</div>
+<div class="entry-two-col">
+<div class="form-group"><label>내 주요 포켓몬 (2개)</label><div class="sticker-selector-btn" onclick="openStickerPicker('my')"><div id="my-sticker-1" class="sticker-icon"></div><div id="my-sticker-2" class="sticker-icon"></div><span style="font-size:12px;color:#8b6b23;margin-left:auto">터치하여 선택 &gt;</span></div></div>
+<div class="form-group"><label>상대 주요 포켓몬 (2개)</label><div class="sticker-selector-btn" onclick="openStickerPicker('opponent')"><div id="op-sticker-1" class="sticker-icon"></div><div id="op-sticker-2" class="sticker-icon"></div><span style="font-size:12px;color:#8b6b23;margin-left:auto">터치하여 선택 &gt;</span></div></div>
+</div>
+<div class="form-group"><label>태그 (쉼표로 구분)</label><input type="text" id="entry-tags" class="input-field" placeholder="예: 운영 실수, 좋은 경기"></div>
+<div class="form-group"><label>메모 / 경기 포인트</label><textarea id="entry-memo" class="input-field textarea-field" placeholder="패배 원인 또는 주요 관전 포인트"></textarea></div>
+<div class="button-row"><button id="entry-cancel-btn" class="btn btn-secondary" onclick="closeMatchEntryModal()">취소</button><button id="entry-save-btn" class="btn" onclick="saveMatchEntry()">전적 저장하기</button></div>
+</div></div>
+<!-- picker -->
+<div id="sticker-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3 id="sticker-modal-title" style="color:#8b6b23;font-weight:normal">포켓몬 아이콘 선택</h3><span class="modal-close" onclick="closeStickerPicker(false)">&times;</span></div><input type="text" id="sticker-search-input" class="input-field" placeholder="검색 (예: 25, 피카츄)" oninput="handleStickerSearch(this.value)"><div class="picker-status-bar"><span>선택: <b id="picker-count">0 / 2</b></span><div style="display:flex;gap:6px"><div class="picker-slot"><div id="temp-slot-1" class="sticker-icon"></div><button class="remove-slot" onclick="removeTempSticker(0)">×</button></div><div class="picker-slot"><div id="temp-slot-2" class="sticker-icon"></div><button class="remove-slot" onclick="removeTempSticker(1)">×</button></div></div></div><div id="sticker-grid-container" class="sticker-grid-modal" onscroll="handleStickerScroll()"></div><p style="font-size:11px;color:#8b6b23;margin-top:8px">두 개를 선택한 뒤 완료를 누르세요. 선택 중 다시 누르면 교체됩니다.</p><button class="btn btn-block btn-secondary" style="margin-top:8px" onclick="closeStickerPicker(true)">선택 완료</button></div></div>
+<script>
+const SPRITE_WIDTH=40,SPRITE_HEIGHT=30,SHEET_COLS=12,TOTAL_STICKERS=3000;
+let pokedexRawData = [
+      { id: 1, name: "이상해씨" }, { id: 2, name: "이상해풀" }, { id: 3, name: "이상해꽃" }, { id: 4, name: "파이리" },
+      { id: 5, name: "리자드" }, { id: 6, name: "리자몽" }, { id: 7, name: "꼬부기" }, { id: 8, name: "어니부기" },
+      { id: 9, name: "거북왕" }, { id: 10, name: "캐터피" }, { id: 11, name: "단데기" }, { id: 12, name: "버터플" },
+      { id: 13, name: "뿔충이" }, { id: 14, name: "딱충이" }, { id: 15, name: "독침붕" }, { id: 16, name: "구구" },
+      { id: 17, name: "피죤" }, { id: 18, name: "피죤투" }, { id: 19, name: "꼬렛" }, { id: 20, name: "레트라" },
+      { id: 21, name: "깨비참" }, { id: 22, name: "깨비드릴조" }, { id: 23, name: "아보" }, { id: 24, name: "아보크" },
+      { id: 25, name: "피카츄" }, { id: 26, name: "라이츄" }, { id: 27, name: "모래두지" }, { id: 28, name: "고지" },
+      { id: 29, name: "니드런♀" }, { id: 30, name: "니드리나" }, { id: 31, name: "니드퀸" }, { id: 32, name: "니드런♂" },
+      { id: 33, name: "니드리노" }, { id: 34, name: "니드킹" }, { id: 35, name: "삐삐" }, { id: 36, name: "픽시" },
+      { id: 37, name: "식스테일" }, { id: 38, name: "나인테일" }, { id: 39, name: "푸린" }, { id: 40, name: "푸크린" },
+      { id: 41, name: "주뱃" }, { id: 42, name: "골뱃" }, { id: 43, name: "뚜벅쵸" }, { id: 44, name: "냄새꼬" },
+      { id: 45, name: "라플레시아" }, { id: 46, name: "파라스" }, { id: 47, name: "파라섹트" }, { id: 48, name: "콘팡" },
+      { id: 49, name: "도나리" }, { id: 50, name: "디그다" }, { id: 51, name: "닥트리오" }, { id: 52, name: "나옹" },
+      { id: 53, name: "페르시온" }, { id: 54, name: "고라파덕" }, { id: 55, name: "골덕" }, { id: 56, name: "망키" },
+      { id: 57, name: "성원숭" }, { id: 58, name: "가디" }, { id: 59, name: "윈디" }, { id: 60, name: "발챙이" },
+      { id: 61, name: "슈륙챙이" }, { id: 62, name: "강챙이" }, { id: 63, name: "캐이시" }, { id: 64, name: "윤겔라" },
+      { id: 65, name: "후딘" }, { id: 66, name: "알통몬" }, { id: 67, name: "근육몬" }, { id: 68, name: "괴력몬" },
+      { id: 69, name: "모다피" }, { id: 70, name: "우츠동" }, { id: 71, name: "우츠보트" }, { id: 72, name: "왕눈해" },
+      { id: 73, name: "독파리" }, { id: 74, name: "꼬마돌" }, { id: 75, name: "데구리" }, { id: 76, name: "딱구리" },
+      { id: 77, name: "포니타" }, { id: 78, name: "날쌩마" }, { id: 79, name: "야돈" }, { id: 80, name: "야도란" },
+      { id: 81, name: "코일" }, { id: 82, name: "레어코일" }, { id: 83, name: "파오리" }, { id: 84, name: "두두" },
+      { id: 85, name: "두트리오" }, { id: 86, name: "쥬쥬" }, { id: 87, name: "쥬레곤" }, { id: 88, name: "질퍽이" },
+      { id: 89, name: "질뻐기" }, { id: 90, name: "셀러" }, { id: 91, name: "파르셀" }, { id: 92, name: "고오스" },
+      { id: 93, name: "고우스트" }, { id: 94, name: "팬텀" }, { id: 95, name: "롱스톤" }, { id: 96, name: "슬리프" },
+      { id: 97, name: "슬리퍼" }, { id: 98, name: "크랩" }, { id: 99, name: "킹크랩" }, { id: 100, name: "찌리리공" },
+      { id: 101, name: "붐볼" }, { id: 102, name: "아라리" }, { id: 103, name: "나시" }, { id: 104, name: "탕구리" },
+      { id: 105, name: "텅구리" }, { id: 106, name: "시라소몬" }, { id: 107, name: "홍수몬" }, { id: 108, name: "내루미" },
+      { id: 109, name: "또가스" }, { id: 110, name: "또도가스" }, { id: 111, name: "뿔카노" }, { id: 112, name: "코뿌리" },
+      { id: 113, name: "럭키" }, { id: 114, name: "덩쿠리" }, { id: 115, name: "캥카" }, { id: 116, name: "쏘드라" },
+      { id: 117, name: "시드라" }, { id: 118, name: "콘치" }, { id: 119, name: "왕콘치" }, { id: 120, name: "별가사리" },
+      { id: 121, name: "아쿠스타" }, { id: 122, name: "마임맨" }, { id: 123, name: "스라크" }, { id: 124, name: "루주라" },
+      { id: 125, name: "에레브" }, { id: 126, name: "마그마" }, { id: 127, name: "쁘사이저" }, { id: 128, name: "켄타로스" },
+      { id: 129, name: "잉어킹" }, { id: 130, name: "갸라도스" }, { id: 131, name: "라프라스" }, { id: 132, name: "메타몽" },
+      { id: 133, name: "이브이" }, { id: 134, name: "샤미드" }, { id: 135, name: "쥬피썬더" }, { id: 136, name: "부스터" },
+      { id: 137, name: "폴리곤" }, { id: 138, name: "암나이트" }, { id: 139, name: "암스타" }, { id: 140, name: "투구" },
+      { id: 141, name: "투구푸스" }, { id: 142, name: "프테라" }, { id: 143, name: "잠만보" }, { id: 144, name: "프리져" },
+      { id: 145, name: "썬더" }, { id: 146, name: "파이어" }, { id: 147, name: "미뇽" }, { id: 148, name: "신뇽" },
+      { id: 149, name: "망나뇽" }, { id: 150, name: "뮤츠" }, { id: 151, name: "뮤" }, { id: 152, name: "치코리타" },
+      { id: 153, name: "베이리프" }, { id: 154, name: "메가니움" }, { id: 155, name: "브케인" }, { id: 156, name: "마그케인" },
+      { id: 157, name: "블레이범" }, { id: 158, name: "리아코" }, { id: 159, name: "엘리게이" }, { id: 160, name: "장크로다일" },
+      { id: 161, name: "꼬리선" }, { id: 162, name: "다꼬리" }, { id: 163, name: "부우부" }, { id: 164, name: "야부엉" },
+      { id: 165, name: "레디바" }, { id: 166, name: "레디안" }, { id: 167, name: "페이검" }, { id: 168, name: "아리아도스" },
+      { id: 169, name: "크로뱃" }, { id: 170, name: "초라기" }, { id: 171, name: "랜턴" }, { id: 172, name: "피츄" },
+      { id: 173, name: "삐" }, { id: 174, name: "푸푸린" }, { id: 175, name: "토게피" }, { id: 176, name: "토게틱" },
+      { id: 177, name: "네이티" }, { id: 178, name: "네이티오" }, { id: 179, name: "메리프" }, { id: 180, name: "보송송" },
+      { id: 181, name: "전룡" }, { id: 182, name: "아르코" }, { id: 183, name: "마릴" }, { id: 184, name: "마릴리" },
+      { id: 185, name: "꼬지모" }, { id: 186, name: "왕구리" }, { id: 187, name: "통통코" }, { id: 188, name: "두코" },
+      { id: 189, name: "솜솜코" }, { id: 190, name: "에이팜" }, { id: 191, name: "해너츠" }, { id: 192, name: "해루미" },
+      { id: 193, name: "왕자리" }, { id: 194, name: "우파" }, { id: 195, name: "누오" }, { id: 196, name: "에브이" },
+      { id: 197, name: "블래키" }, { id: 198, name: "니로우" }, { id: 199, name: "야도킹" }, { id: 200, name: "무우마" },
+      { id: 201, name: "안농(A의 모습)" }, { id: 202, name: "마자용" }, { id: 203, name: "키링키" }, { id: 204, name: "피콘" },
+      { id: 205, name: "쏘콘" }, { id: 206, name: "노고치" }, { id: 207, name: "글라이거" }, { id: 208, name: "강철톤" },
+      { id: 209, name: "블루" }, { id: 210, name: "그랑블루" }, { id: 211, name: "침바루" }, { id: 212, name: "핫삼" },
+      { id: 213, name: "단단지" }, { id: 214, name: "헤라크로스" }, { id: 215, name: "포푸니" }, { id: 216, name: "깜지곰" },
+      { id: 217, name: "링곰" }, { id: 218, name: "마그마그" }, { id: 219, name: "마그카르고" }, { id: 220, name: "꾸꾸리" },
+      { id: 221, name: "메꾸리" }, { id: 222, name: "코산호" }, { id: 223, name: "총어" }, { id: 224, name: "대포무노" },
+      { id: 225, name: "딜리버드" }, { id: 226, name: "만타인" }, { id: 227, name: "무장조" }, { id: 228, name: "델빌" },
+      { id: 229, name: "헬가" }, { id: 230, name: "킹드라" }, { id: 231, name: "코코리" }, { id: 232, name: "코리갑" },
+      { id: 233, name: "폴리곤2" }, { id: 234, name: "노라키" }, { id: 235, name: "루브도" }, { id: 236, name: "배루키" },
+      { id: 237, name: "카포에라" }, { id: 238, name: "뽀뽀라" }, { id: 239, name: "에레키드" }, { id: 240, name: "마그비" },
+      { id: 241, name: "밀탱크" }, { id: 242, name: "해피너스" }, { id: 243, name: "라이코" }, { id: 244, name: "앤테이" },
+      { id: 245, name: "스이쿤" }, { id: 246, name: "애버라스" }, { id: 247, name: "데기라스" }, { id: 248, name: "마기라스" },
+      { id: 249, name: "루기아" }, { id: 250, name: "칠색조" }, { id: 251, name: "세레비" }, { id: 252, name: "나무지기" },
+      { id: 253, name: "나무돌이" }, { id: 254, name: "나무킹" }, { id: 255, name: "아차모" }, { id: 256, name: "영치코" },
+      { id: 257, name: "번치코" }, { id: 258, name: "물짱이" }, { id: 259, name: "늪짱이" }, { id: 260, name: "대짱이" },
+      { id: 261, name: "포챠나" }, { id: 262, name: "그라에나" }, { id: 263, name: "지그제구리" }, { id: 264, name: "직구리" },
+      { id: 265, name: "개무소" }, { id: 266, name: "실쿤" }, { id: 267, name: "뷰티플라이" }, { id: 268, name: "카스쿤" },
+      { id: 269, name: "독케일" }, { id: 270, name: "연꽃몬" }, { id: 271, name: "로토스" }, { id: 272, name: "로파파" },
+      { id: 273, name: "도토링" }, { id: 274, name: "잎새코" }, { id: 275, name: "다탱구" }, { id: 276, name: "테일로" },
+      { id: 277, name: "스왈로" }, { id: 278, name: "갈모매" }, { id: 279, name: "패리퍼" }, { id: 280, name: "랄토스" },
+      { id: 281, name: "킬리아" }, { id: 282, name: "가디안" }, { id: 283, name: "비구술" }, { id: 284, name: "비나방" },
+      { id: 285, name: "버섯꼬" }, { id: 286, name: "버섯모" }, { id: 287, name: "게을로" }, { id: 288, name: "발바로" },
+      { id: 289, name: "게을킹" }, { id: 290, name: "토중몬" }, { id: 291, name: "아이스크" }, { id: 292, name: "껍질몬" },
+      { id: 293, name: "소곤룡" }, { id: 294, name: "노공룡" }, { id: 295, name: "폭음룡" }, { id: 296, name: "마크탕" },
+      { id: 297, name: "하리뭉" }, { id: 298, name: "루리리" }, { id: 299, name: "코코파스" }, { id: 300, name: "에나비" },
+      { id: 301, name: "델케티" }, { id: 302, name: "깜까미" }, { id: 303, name: "입치트" }, { id: 304, name: "가보리" },
+      { id: 305, name: "갱도라" }, { id: 306, name: "보스로라" }, { id: 307, name: "요가랑" }, { id: 308, name: "요가램" },
+      { id: 309, name: "썬더라이" }, { id: 310, name: "썬더볼트" }, { id: 311, name: "플러시" }, { id: 312, name: "마이농" },
+      { id: 313, name: "볼비트" }, { id: 314, name: "네오비트" }, { id: 315, name: "로젤리아" }, { id: 316, name: "꼴깍몬" },
+      { id: 317, name: "꿀꺽몬" }, { id: 318, name: "샤프니아" }, { id: 319, name: "샤크니아" }, { id: 320, name: "고래왕자" },
+      { id: 321, name: "고래왕" }, { id: 322, name: "둔타" }, { id: 323, name: "폭타" }, { id: 324, name: "코터스" },
+      { id: 325, name: "피그점프" }, { id: 326, name: "피그킹" }, { id: 327, name: "얼루기" }, { id: 328, name: "톱치" },
+      { id: 329, name: "비브라바" }, { id: 330, name: "플라이곤" }, { id: 331, name: "선인왕" }, { id: 332, name: "밤선인" },
+      { id: 333, name: "파비코" }, { id: 334, name: "파비코리" }, { id: 335, name: "쟝고" }, { id: 336, name: "세비퍼" },
+      { id: 337, name: "루나톤" }, { id: 338, name: "솔록" }, { id: 339, name: "미꾸리" }, { id: 340, name: "메깅" },
+      { id: 341, name: "가재군" }, { id: 342, name: "가재장군" }, { id: 343, name: "오뚝군" }, { id: 344, name: "점토도리" },
+      { id: 345, name: "릴링" }, { id: 346, name: "릴리요" }, { id: 347, name: "아노딥스" }, { id: 348, name: "아말도" },
+      { id: 349, name: "빈티나" }, { id: 350, name: "밀로틱" }, { id: 351, name: "캐스퐁" }, { id: 352, name: "켈리몬" },
+      { id: 353, name: "어둠대신" }, { id: 354, name: "다크펫" }, { id: 355, name: "해골몽" }, { id: 356, name: "미라몽" },
+      { id: 357, name: "트로피우스" }, { id: 358, name: "치렁" }, { id: 359, name: "앱솔" }, { id: 360, name: "마자" },
+      { id: 361, name: "눈꼬마" }, { id: 362, name: "얼음귀신" }, { id: 363, name: "대굴레오" }, { id: 364, name: "씨레오" },
+      { id: 365, name: "씨카이저" }, { id: 366, name: "진주몽" }, { id: 367, name: "헌테일" }, { id: 368, name: "분홍장이" },
+      { id: 369, name: "시라칸" }, { id: 370, name: "사랑동이" }, { id: 371, name: "아공이" }, { id: 372, name: "쉘곤" },
+      { id: 373, name: "보만다" }, { id: 374, name: "메탕" }, { id: 375, name: "메탕구" }, { id: 376, name: "메타그로스" },
+      { id: 377, name: "레지락" }, { id: 378, name: "레지아이스" }, { id: 379, name: "레지스틸" }, { id: 380, name: "라티아스" },
+      { id: 381, name: "라티오스" }, { id: 382, name: "가이오가" }, { id: 383, name: "그란돈" }, { id: 384, name: "레쿠쟈" },
+      { id: 385, name: "지라치" }, { id: 386, name: "테오키스" }, { id: 387, name: "모부기" }, { id: 388, name: "수풀부기" },
+      { id: 389, name: "토대부기" }, { id: 390, name: "불꽃숭이" }, { id: 391, name: "파이숭이" }, { id: 392, name: "초염몽" },
+      { id: 393, name: "팽도리" }, { id: 394, name: "팽태자" }, { id: 395, name: "엠페르트" }, { id: 396, name: "찌르꼬" },
+      { id: 397, name: "찌르버드" }, { id: 398, name: "찌르호크" }, { id: 399, name: "비버니" }, { id: 400, name: "비버통" },
+      { id: 401, name: "귀뚤뚜기" }, { id: 402, name: "귀뚤톡크" }, { id: 403, name: "꼬링크" }, { id: 404, name: "럭시오" },
+      { id: 405, name: "렌트라" }, { id: 406, name: "꼬몽울" }, { id: 407, name: "로즈레이드" }, { id: 408, name: "두개도스" },
+      { id: 409, name: "램펄드" }, { id: 410, name: "방패톱스" }, { id: 411, name: "바리톱스" }, { id: 412, name: "도롱충이(초목도롱)" },
+      { id: 413, name: "도롱마담(초목도롱)" }, { id: 414, name: "나메일" }, { id: 415, name: "세꿀버리" }, { id: 416, name: "비퀸" },
+      { id: 417, name: "파치리스" }, { id: 418, name: "브이젤" }, { id: 419, name: "플로젤" }, { id: 420, name: "체리버" },
+      { id: 421, name: "체리꼬" }, { id: 422, name: "깝질무(서쪽바다)" }, { id: 423, name: "트리토돈(서쪽바다)" }, { id: 424, name: "겟핸보숭" },
+      { id: 425, name: "흔들풍손" }, { id: 426, name: "둥실라이드" }, { id: 427, name: "이어롤" }, { id: 428, name: "이어롭" },
+      { id: 429, name: "무우마직" }, { id: 430, name: "돈크로우" }, { id: 431, name: "나옹마" }, { id: 432, name: "몬냥이" },
+      { id: 433, name: "랑딸랑" }, { id: 434, name: "스컹뿡" }, { id: 435, name: "스컹탱크" }, { id: 436, name: "동미러" },
+      { id: 437, name: "동탁군" }, { id: 438, name: "꼬지지" }, { id: 439, name: "흉내내" }, { id: 440, name: "핑복" },
+      { id: 441, name: "페라페" }, { id: 442, name: "화강돌" }, { id: 443, name: "딥상어동" }, { id: 445, name: "한바이트" },
+      { id: 446, name: "먹고자" }, { id: 447, name: "리오르" }, { id: 448, name: "루카리오" }, { id: 449, name: "히포포타스" },
+      { id: 450, name: "하마돈" }, { id: 451, name: "스콜피" }, { id: 452, name: "드래피온" }, { id: 453, name: "삐딱구리" },
+      { id: 454, name: "독개굴" }, { id: 455, name: "무스틈니" }, { id: 456, name: "형광어" }, { id: 457, name: "네오라이트" },
+      { id: 458, name: "타만타" }, { id: 459, name: "눈쓰개" }, { id: 460, name: "눈설왕" }, { id: 461, name: "포푸니라" },
+      { id: 462, name: "자포코일" }, { id: 463, name: "내룸벨트" }, { id: 464, name: "거대코뿌리" }, { id: 465, name: "덩쿠림보" },
+      { id: 466, name: "에레키블" }, { id: 467, name: "마그마번" }, { id: 468, name: "토게키스" }, { id: 469, name: "메가자리" },
+      { id: 470, name: "리피아" }, { id: 471, name: "글레이시아" }, { id: 472, name: "글라이온" }, { id: 473, name: "맘모꾸리" },
+      { id: 474, name: "폴리곤Z" }, { id: 475, name: "엘레이드" }, { id: 476, name: "대코파스" }, { id: 477, name: "야느와르몽" },
+      { id: 478, name: "눈여아" }, { id: 479, name: "로토무" }, { id: 480, name: "유크시" }, { id: 481, name: "엠라이트" },
+      { id: 482, name: "아그놈" }, { id: 483, name: "디아루가" }, { id: 484, name: "펄기아" }, { id: 485, name: "히드런" },
+      { id: 486, name: "레지기가스" }, { id: 487, name: "기라티나" }, { id: 488, name: "크레세리아" }, { id: 489, name: "피오네" },
+      { id: 490, name: "마나피" }, { id: 491, name: "다크라이" }, { id: 492, name: "쉐이미" }, { id: 493, name: "아르세우스" },
+      { id: 494, name: "비크티니" }, { id: 495, name: "주리비얀" }, { id: 496, name: "샤비" }, { id: 497, name: "샤로다" },
+      { id: 498, name: "뚜꾸리" }, { id: 499, name: "차오꿀" }, { id: 500, name: "염무왕" }, { id: 501, name: "수댕이" },
+      { id: 502, name: "쌍검자비" }, { id: 503, name: "대검귀" }, { id: 504, name: "보르쥐" }, { id: 505, name: "보르그" },
+      { id: 506, name: "요테리" }, { id: 507, name: "하데리어" }, { id: 508, name: "바랜드" }, { id: 509, name: "쌔비냥" },
+      { id: 510, name: "레파르다스" }, { id: 511, name: "야나프" }, { id: 512, name: "야나키" }, { id: 513, name: "바오프" },
+      { id: 514, name: "바오키" }, { id: 515, name: "앗차프" }, { id: 516, name: "앗차키" }, { id: 517, name: "몽나" },
+      { id: 518, name: "몽얌나" }, { id: 519, name: "콩둘기" }, { id: 520, name: "유토브" }, { id: 521, name: "켄호로우(수컷의 모습)" },
+      { id: 522, name: "줄뮤마" }, { id: 523, name: "제브라이카" }, { id: 524, name: "단굴" }, { id: 525, name: "암트르" },
+      { id: 526, name: "기가이어스" }, { id: 527, name: "또르박쥐" }, { id: 528, name: "맘박쥐" }, { id: 529, name: "두더류" },
+      { id: 530, name: "몰드류" }, { id: 531, name: "다부니" }, { id: 532, name: "으랏차" }, { id: 533, name: "토쇠골" },
+      { id: 534, name: "노보청" }, { id: 535, name: "동챙이" }, { id: 536, name: "두까비" }, { id: 537, name: "두빅굴" },
+      { id: 538, name: "던지미" }, { id: 539, name: "타격귀" }, { id: 540, name: "두르보" }, { id: 541, name: "두르쿤" },
+      { id: 542, name: "모아머" }, { id: 543, name: "마디네" }, { id: 544, name: "휠구" }, { id: 545, name: "펜드라" },
+      { id: 546, name: "소미안" }, { id: 547, name: "엘풍" }, { id: 548, name: "치릴리" }, { id: 549, name: "드레디어" },
+      { id: 550, name: "배쓰나이(적색근의 모습)" }, { id: 551, name: "깜눈크" }, { id: 552, name: "악비르" }, { id: 553, name: "악비아르" },
+      { id: 554, name: "달막화" }, { id: 555, name: "불비달마" }, { id: 556, name: "마라카치" }, { id: 557, name: "돌살이" },
+      { id: 558, name: "암팰리스" }, { id: 559, name: "곤율랭" }, { id: 560, name: "곤율거니" }, { id: 561, name: "심보러" },
+      { id: 562, name: "데스마스" }, { id: 563, name: "데스니칸" }, { id: 564, name: "프로토가" }, { id: 565, name: "늑골라" },
+      { id: 566, name: "아켄" }, { id: 567, name: "아케오스" }, { id: 568, name: "깨봉이" }, { id: 569, name: "더스트나" },
+      { id: 570, name: "조로아" }, { id: 571, name: "조로아크" }, { id: 572, name: "치라미" }, { id: 573, name: "치라치노" },
+      { id: 574, name: "고디탱" }, { id: 575, name: "고디보미" }, { id: 576, name: "고디모아젤" }, { id: 577, name: "유니란" },
+      { id: 578, name: "듀란" }, { id: 579, name: "란쿨루스" }, { id: 580, name: "꼬지보리" }, { id: 581, name: "스완나" },
+      { id: 582, name: "바닐프티" }, { id: 583, name: "바닐리치" }, { id: 584, name: "배바닐라" }, { id: 585, name: "사철록(봄의 모습)" },
+      { id: 586, name: "바라철록(봄의 모습)" }, { id: 587, name: "에몽가" }, { id: 588, name: "딱정곤" }, { id: 589, name: "슈바르고" },
+      { id: 590, name: "깜놀버슬" }, { id: 591, name: "뽀록나" }, { id: 592, name: "탱그릴(수컷의 모습)" }, { id: 593, name: "탱탱겔(수컷의 모습)" },
+      { id: 594, name: "맘복치" }, { id: 595, name: "파쪼옥" }, { id: 596, name: "전툴라" }, { id: 597, name: "철시드" },
+      { id: 598, name: "너트령" }, { id: 599, name: "기어르" }, { id: 600, name: "기기어르" }, { id: 601, name: "기기기어르" },
+      { id: 602, name: "저리어" }, { id: 603, name: "저리릴" }, { id: 604, name: "저리더프" }, { id: 605, name: "리그레" },
+      { id: 606, name: "벰크" }, { id: 607, name: "불켜미" }, { id: 608, name: "램프라" }, { id: 609, name: "샹델라" },
+      { id: 610, name: "터검니" }, { id: 611, name: "액슨도" }, { id: 612, name: "액스라이즈" }, { id: 613, name: "코고미" },
+      { id: 614, name: "툰베어" }, { id: 615, name: "프리지오" }, { id: 616, name: "쪼마리" }, { id: 617, name: "어지리더" },
+      { id: 618, name: "메더" }, { id: 619, name: "비조푸" }, { id: 620, name: "비조도" }, { id: 621, name: "크리만" },
+      { id: 622, name: "골비람" }, { id: 623, name: "골루그" }, { id: 624, name: "자망칼" }, { id: 625, name: "절각참" },
+      { id: 626, name: "버프론" }, { id: 627, name: "수리둥보" }, { id: 628, name: "워글" }, { id: 629, name: "벌차이" },
+      { id: 630, name: "버랜지나" }, { id: 631, name: "앤티골" }, { id: 632, name: "아이앤트" }, { id: 633, name: "모노두" },
+      { id: 634, name: "디헤드" }, { id: 635, name: "삼삼드래" }, { id: 636, name: "활화르바" }, { id: 637, name: "불카모스" },
+      { id: 638, name: "코바르온" }, { id: 639, name: "테라키온" }, { id: 640, name: "비리디온" }, { id: 641, name: "토네로스(화신폼)" },
+      { id: 642, name: "볼트로스(화신폼)" }, { id: 643, name: "레시라무" }, { id: 644, name: "제크로무" }, { id: 645, name: "랜드로스(화신폼)" },
+      { id: 646, name: "큐레무" }, { id: 647, name: "케르ディオ" }, { id: 648, name: "메로엣타" }, { id: 649, name: "게노세크트" },
+      { id: 650, name: "도치마론" }, { id: 651, name: "도치보구" }, { id: 652, name: "브리가론" }, { id: 653, name: "푸호꼬" },
+      { id: 654, name: "테르나" }, { id: 655, name: "마폭시" }, { id: 656, name: "개구마르" }, { id: 657, name: "개굴반장" },
+      { id: 658, name: "개굴닌자" }, { id: 659, name: "파르빗" }, { id: 660, name: "파르토" }, { id: 661, name: "화살꼬빈" },
+      { id: 662, name: "불화살빈" }, { id: 663, name: "파이어로" }, { id: 664, name: "분이벌레" }, { id: 665, name: "분떠도리" },
+      { id: 666, name: "비비용(빙설의 모양)" }, { id: 667, name: "레오꼬" }, { id: 668, name: "화염레오(수컷의 모습)" }, { id: 669, name: "플라베베(빨간 꽃)" },
+      { id: 670, name: "플라엣테(빨간 꽃)" }, { id: 671, name: "플라제스(빨간 꽃)" }, { id: 672, name: "메이클" }, { id: 673, name: "고고트" },
+      { id: 674, name: "판짱" }, { id: 675, name: "부란다" }, { id: 676, name: "트리미앙(야생의 모습)" }, { id: 677, name: "냐스퍼" },
+      { id: 678, name: "냐오닉스(수컷의 모습)" }, { id: 679, name: "단칼빙" }, { id: 680, name: "쌍검킬" }, { id: 681, name: "킬가르도" },
+      { id: 682, name: "슈쁘" }, { id: 683, name: "프레프티르" }, { id: 684, name: "나룸퍼프" }, { id: 685, name: "나루림" },
+      { id: 686, name: "오케이징" }, { id: 687, name: "칼라마네로" }, { id: 688, name: "거북손손" }, { id: 689, name: "거북손데스" },
+      { id: 690, name: "수레기" }, { id: 691, name: "드래캄" }, { id: 692, name: "완철포" }, { id: 693, name: "블로스터" },
+      { id: 694, name: "목도리키텔" }, { id: 695, name: "일레도리자드" }, { id: 696, name: "티고라스" }, { id: 697, name: "견고라스" },
+      { id: 698, name: "아마루스" }, { id: 699, name: "아마루르가" }, { id: 700, name: "님피아" }, { id: 701, name: "루차불" },
+      { id: 702, name: "데덴네" }, { id: 703, name: "멜리시" }, { id: 704, name: "미끄메라" }, { id: 705, name: "미끄네일" },
+      { id: 706, name: "미끄래곤" }, { id: 707, name: "클레피" }, { id: 708, name: "나무령" }, { id: 709, name: "대로트" },
+      { id: 710, name: "호바귀(소)" }, { id: 711, name: "펌킨인(소)" }, { id: 712, name: "꽁어름" }, { id: 713, name: "크레베이스" },
+      { id: 714, name: "음뱃" }, { id: 715, name: "음번" }, { id: 716, name: "제르네아스" }, { id: 717, name: "이벨타르" },
+      { id: 718, name: "지가르데" }, { id: 719, name: "디안시" }, { id: 720, name: "후파" }, { id: 721, name: "볼케니온" },
+      { id: 722, name: "나몰빼미" }, { id: 723, name: "빼미스로우" }, { id: 724, name: "모크나이퍼" }, { id: 725, name: "냐오불" },
+      { id: 726, name: "냐오히트" }, { id: 727, name: "어흥염" }, { id: 728, name: "누리공" }, { id: 729, name: "키요공" },
+      { id: 730, name: "누리레느" }, { id: 731, name: "콕코구리" }, { id: 732, name: "크라파" }, { id: 733, name: "왕큰부리" },
+      { id: 734, name: "영구스" }, { id: 735, name: "형사구스" }, { id: 736, name: "턱지충이" }, { id: 737, name: "전지충이" },
+      { id: 738, name: "투구뿌논" }, { id: 739, name: "오기지게" }, { id: 740, name: "모단단게" }, { id: 741, name: "춤추새(이글이글스타일)" },
+      { id: 742, name: "에블리" }, { id: 743, name: "에리본" }, { id: 744, name: "암멍이" }, { id: 745, name: "루가루암(한낮의 모습)" },
+      { id: 746, name: "약어리" }, { id: 747, name: "시마사리" }, { id: 748, name: "더시마사리" }, { id: 749, name: "머드나기" },
+      { id: 750, name: "만마드" }, { id: 751, name: "물거미" }, { id: 752, name: "깨비물거미" }, { id: 753, name: "짜랑랑" },
+      { id: 754, name: "라란티스" }, { id: 755, name: "자마슈" }, { id: 756, name: "마셰이드" }, { id: 757, name: "야도뇽" },
+      { id: 758, name: "염뉴트" }, { id: 759, name: "포곰곰" }, { id: 760, name: "이븐곰" }, { id: 761, name: "달콤아" },
+      { id: 762, name: "달무리나" }, { id: 763, name: "달코퀸" }, { id: 764, name: "큐아링" }, { id: 765, name: "하랑우탄" },
+      { id: 766, name: "내던숭이" }, { id: 767, name: "꼬시레" }, { id: 768, name: "갑주무사" }, { id: 769, name: "모래꿍" },
+      { id: 770, name: "모래성이당" }, { id: 771, name: "해무기" }, { id: 772, name: "타입:널" }, { id: 773, name: "실버디" },
+      { id: 774, name: "메테노(빨간색 코어)" }, { id: 775, name: "자말라" }, { id: 776, name: "폭거북스" }, { id: 777, name: "토게데마루" },
+      { id: 778, name: "따라큐" }, { id: 779, name: "치갈기" }, { id: 780, name: "할비롱" }, { id: 781, name: "타타륜" },
+      { id: 782, name: "짜랑꼬" }, { id: 783, name: "짜랑고우" }, { id: 784, name: "짜랑고우거" }, { id: 785, name: "카푸꼬꼬꼭" },
+      { id: 786, name: "카푸나비나" }, { id: 787, name: "카푸브루루" }, { id: 788, name: "카푸느지느" }, { id: 789, name: "코스모그" },
+      { id: 790, name: "코스모움" }, { id: 791, name: "솔가레오" }, { id: 792, name: "루나아라" }, { id: 793, name: "텅비드" },
+      { id: 794, name: "매시붕" }, { id: 795, name: "페로코체" }, { id: 796, name: "전수목" }, { id: 797, name: "철화구야" },
+      { id: 798, name: "종이신도" }, { id: 799, name: "악식킹" }, { id: 800, name: "네크로즈마" }, { id: 801, name: "마기아나" },
+      { id: 802, name: "마샤도" }, { id: 803, name: "베베놈" }, { id: 804, name: "아고용" }, { id: 805, name: "차곡차곡" },
+      { id: 806, name: "두파팡" }, { id: 807, name: "제라오라" }, { id: 808, name: "멜탄" }, { id: 809, name: "멜메탈" },
+      { id: 810, name: "흥나숭" }, { id: 811, name: "채키몽" }, { id: 812, name: "고릴타" }, { id: 813, name: "염버니" },
+      { id: 814, name: "래비풋" }, { id: 815, name: "에이스번" }, { id: 816, name: "울머기" }, { id: 817, name: "누겔레온" },
+      { id: 818, name: "인텔리레온" }, { id: 819, name: "탐리스" }, { id: 820, name: "요씽리스" }, { id: 821, name: "파라꼬" },
+      { id: 822, name: "파크로우" }, { id: 823, name: "아머까오" }, { id: 824, name: "두루지벌레" }, { id: 825, name: "레돔벌레" },
+      { id: 826, name: "이올브" }, { id: 827, name: "훔처우" }, { id: 828, name: "폭슬라이" }, { id: 829, name: "꼬모카" },
+      { id: 830, name: "백솜모카" }, { id: 831, name: "우르" }, { id: 832, name: "배우르" }, { id: 833, name: "깨물부기" },
+      { id: 834, name: "갈가부기" }, { id: 835, name: "멍파치" }, { id: 836, name: "펄스멍" }, { id: 837, name: "탄동" },
+      { id: 838, name: "탄차곤" }, { id: 839, name: "석탄산" }, { id: 840, name: "과사삭벌레" }, { id: 841, name: "애프룡" },
+      { id: 842, name: "단지래플" }, { id: 843, name: "모래뱀" }, { id: 844, name: "사다이사" }, { id: 845, name: "윽우지" },
+      { id: 846, name: "찌로꼬치" }, { id: 847, name: "꼬치조" }, { id: 848, name: "일레즌" }, { id: 849, name: "스트린더(하이한 모습)" },
+      { id: 850, name: "태우지네" }, { id: 851, name: "다태우지네" }, { id: 852, name: "때때무노" }, { id: 853, name: "케오퍼스" },
+      { id: 854, name: "데인차" }, { id: 855, name: "포트데스(위작품)" }, { id: 856, name: "몸지브림" }, { id: 857, name: "손지브림" },
+      { id: 858, name: "브리무음" }, { id: 859, name: "메롱꿍" }, { id: 860, name: "쏘겨모" }, { id: 861, name: "오롱털" },
+      { id: 862, name: "가로막구리" }, { id: 863, name: "나이킹" }, { id: 864, name: "산호르곤" }, { id: 865, name: "창파나이트" },
+      { id: 866, name: "마임꽁꽁" }, { id: 867, name: "데스판" }, { id: 868, name: "마빌크" }, { id: 869, name: "마휘핑(딸기)" },
+      { id: 870, name: "대여르" }, { id: 871, name: "찌르성게" }, { id: 872, name: "누니머기" }, { id: 873, name: "모스노우" },
+      { id: 874, name: "돌헨진" }, { id: 875, name: "빙큐보" }, { id: 876, name: "에써르(수컷의 모습)" }, { id: 877, name: "모르페코" },
+      { id: 878, name: "끼리동" }, { id: 879, name: "대왕끼리동" }, { id: 880, name: "파치래곤" }, { id: 881, name: "파치르돈" },
+      { id: 882, name: "어래곤" }, { id: 883, name: "어치르돈" }, { id: 884, name: "두랄루돈" }, { id: 885, name: "드라꼰" },
+      { id: 886, name: "드래런치" }, { id: 887, name: "드래펄트" }, { id: 888, name: "자시안" }, { id: 889, name: "자마젠타" },
+      { id: 890, name: "무한다이노" }, { id: 891, name: "치고마" }, { id: 892, name: "우라오스(일격의 태세)" }, { id: 893, name: "자루도" },
+      { id: 894, name: "레지에레키" }, { id: 895, name: "레지드래고" }, { id: 896, name: "블리자포스" }, { id: 897, name: "레이스포스" },
+      { id: 898, name: "버드렉스" }, { id: 899, name: "신비록" }, { id: 900, name: "사마자르" }, { id: 901, name: "다투곰" },
+      { id: 902, name: "대쓰여너(수컷의 모습)" }, { id: 903, name: "포푸니크" }, { id: 904, name: "장침바루" }, { id: 905, name: "러브로스(화신폼)" },
+      { id: 906, name: "나오하" }, { id: 907, name: "나로테" }, { id: 908, name: "마스카나" }, { id: 909, name: "뜨아거" },
+      { id: 910, name: "악뜨거" }, { id: 911, name: "라우드본" }, { id: 912, name: "꾸왁스" }, { id: 913, name: "아꾸왁" },
+      { id: 914, name: "웨이니발" }, { id: 915, name: "맛보돈" }, { id: 916, name: "퍼퓨돈(수컷의 모습)" }, { id: 917, name: "타랜툴라" },
+      { id: 918, name: "트래피더" }, { id: 919, name: "콩알뚜기" }, { id: 920, name: "엑스레그" }, { id: 921, name: "빠모" },
+      { id: 922, name: "빠모트" }, { id: 923, name: "빠르모트" }, { id: 924, name: "두리쥐" }, { id: 925, name: "파밀리쥐(세 식구)" },
+      { id: 926, name: "쫀도기" }, { id: 927, name: "바우첼" }, { id: 928, name: "미니브" }, { id: 929, name: "올리뇨" },
+      { id: 930, name: "올리르바" }, { id: 931, name: "시비꼬(그린 페더)" }, { id: 932, name: "베베솔트" }, { id: 933, name: "스태솔트" },
+      { id: 934, name: "콜로솔트" }, { id: 935, name: "카르본" }, { id: 936, name: "카디나르마" }, { id: 937, name: "파라블레이즈" },
+      { id: 938, name: "빈나두" }, { id: 939, name: "찌리배리" }, { id: 940, name: "찌리비" }, { id: 941, name: "찌리비크" },
+      { id: 942, name: "오라티프" }, { id: 943, name: "마피티프" }, { id: 944, name: "땃쭈르" }, { id: 945, name: "태깅구르" },
+      { id: 946, name: "그푸리" }, { id: 947, name: "공푸리" }, { id: 948, name: "들눈해" }, { id: 949, name: "육파리" },
+      { id: 950, name: "절벼게" }, { id: 951, name: "캡싸이" }, { id: 952, name: "스코빌런" }, { id: 953, name: "구르데" },
+      { id: 954, name: "베라카스" }, { id: 955, name: "하느라기" }, { id: 956, name: "클레스퍼트라" }, { id: 957, name: "어리짱" },
+      { id: 958, name: "벼리짱" }, { id: 959, name: "두드리짱" }, { id: 960, name: "바다그다" }, { id: 961, name: "바닥트리오" },
+      { id: 962, name: "떨구새" }, { id: 963, name: "맨돌핀" }, { id: 964, name: "돌핀맨" }, { id: 965, name: "부르롱" },
+      { id: 966, name: "부르르룸" }, { id: 967, name: "모토마" }, { id: 968, name: "꿈트렁" }, { id: 969, name: "초롱순" },
+      { id: 970, name: "킬라플로르" }, { id: 971, name: "망망이" }, { id: 972, name: "묘두기" }, { id: 973, name: "꼬이밍고" },
+      { id: 974, name: "터벅고래" }, { id: 975, name: "우락고래" }, { id: 976, name: "가비루사" }, { id: 977, name: "어써러셔" },
+      { id: 978, name: "싸리용(젖힌 모습)" }, { id: 979, name: "저승갓숭" }, { id: 980, name: "토오" }, { id: 981, name: "키키링" },
+      { id: 982, name: "노고고치(두마디폼)" }, { id: 983, name: "대도각참" }, { id: 984, name: "위대한엄니" }, { id: 985, name: "우렁찬꼬리" },
+      { id: 986, name: "사나운버섯" }, { id: 987, name: "날개치는머리" }, { id: 988, name: "땅을기는날개" }, { id: 989, name: "모래털가죽" },
+      { id: 990, name: "무쇠바퀴" }, { id: 991, name: "무쇠보따리" }, { id: 992, name: "무쇠손" }, { id: 993, name: "무쇠머리" },
+      { id: 994, name: "무쇠독나방" }, { id: 995, name: "무쇠가시" }, { id: 996, name: "드니차" }, { id: 997, name: "드니꽁" },
+      { id: 998, name: "드닐레이브" }, { id: 999, name: "모으령(상자폼)" }, { id: 1000, name: "타부자고" }, { id: 1001, name: "총지엔" },
+      { id: 1002, name: "파오젠" }, { id: 1003, name: "딩루" }, { id: 1004, name: "위유이" }, { id: 1005, name: "고동치는달" },
+      { id: 1006, name: "무쇠무인" }, { id: 1007, name: "코라이돈" }, { id: 1008, name: "미라이돈" }, { id: 1009, name: "굽이치는물결" },
+      { id: 1010, name: "무쇠잎새" }, { id: 1011, name: "과미르" }, { id: 1012, name: "차데스" }, { id: 1013, name: "그우린차(범작)" },
+      { id: 1014, name: "조타구" }, { id: 1015, name: "이야후" }, { id: 1016, name: "기로치" }, { id: 1017, name: "오거폰" },
+      { id: 1018, name: "브리두라스" }, { id: 1019, name: "과미드라" }, { id: 1020, name: "꿰뚫는화염" }, { id: 1021, name: "날뛰는우레" },
+      { id: 1022, name: "무쇠암석" }, { id: 1023, name: "무쇠감투" }, { id: 1024, name: "테라파고스" }, { id: 1025, name: "복숭악동" }
+    ];
+let uniquePokedexMap={},stickerData=[];function validateAndRepairPokedex(){const banner=document.getElementById('dex-status-banner');const ids=new Set();let valid=true;pokedexRawData.forEach(x=>{if(!Number.isInteger(x.id)||x.id<1||x.id>1025||ids.has(x.id))valid=false;ids.add(x.id)});if(ids.size<1025)valid=false;if(!valid){for(let i=1;i<=1025;i++)if(!ids.has(i))pokedexRawData.push({id:i,name:`포켓몬 #${i}`});pokedexRawData.sort((a,b)=>a.id-b.id)}uniquePokedexMap={};pokedexRawData.forEach(x=>uniquePokedexMap[x.id]=x.name);stickerData=Array.from({length:TOTAL_STICKERS},(_,i)=>({index:i,dexNum:i,name:i===0?'공란 (#0)':((uniquePokedexMap[i]||('포켓몬 #'+i))+' (#'+i+')')}));banner.innerHTML='<span>박물관 전국도감 등록 완료 (총 1025종 탑재)</span>'}
+let db=null,allMatches=[],allGroups=[],editingId=null,currentPickerTarget='my',selectedMyStickers=[6,25],selectedOpStickers=[887,0],pickerTempSelection=[],currentRenderList=[],visibleStickerCount=0;const BATCH_SIZE=120;const DB_VERSION=2;
+const $=id=>document.getElementById(id);function pad(n){return String(n).padStart(2,'0')}function todayISO(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}function isoToDisplay(s){if(!s)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(s)){const [y,m,d]=s.split('-');return `${y}.${m}.${d}`}return s}function normalizeDate(m){if(m.playedAt)return m.playedAt.slice(0,10);if(/^\d{4}\.\d{2}\.\d{2}$/.test(m.date))return m.date.replaceAll('.','-');return todayISO()}
+function initDB(){return new Promise((resolve,reject)=>{if(!window.indexedDB){reject(new Error('IndexedDB를 사용할 수 없습니다.'));return}let req;try{req=indexedDB.open('PokemonCardDB',DB_VERSION)}catch(e){reject(e);return}req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('matches'))d.createObjectStore('matches',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('matchGroups'))d.createObjectStore('matchGroups',{keyPath:'id',autoIncrement:true})};req.onblocked=()=>reject(new Error('다른 탭에서 기존 전적 데이터베이스를 사용 중입니다. 해당 탭을 닫고 다시 시도해주세요.'));req.onsuccess=e=>{db=e.target.result;if(!db.objectStoreNames.contains('matchGroups')){reject(new Error('경기 묶음 저장소를 초기화하지 못했습니다.'))}else resolve(db)};req.onerror=()=>reject(req.error||new Error('데이터베이스를 열 수 없습니다.'))})}
+function dbGroupAdd(group){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matchGroups','readwrite')}catch(e){rej(e);return}const r=tx.objectStore('matchGroups').add(group);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||new Error('경기 묶음 저장 오류'))})}
+function dbGroupPut(group){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matchGroups','readwrite')}catch(e){rej(e);return}const r=tx.objectStore('matchGroups').put(group);r.onsuccess=()=>res();r.onerror=()=>rej(r.error||new Error('경기 묶음 수정 오류'))})}
+function getAllGroupsDB(){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matchGroups','readonly')}catch(e){rej(e);return}const r=tx.objectStore('matchGroups').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error||new Error('경기 묶음을 읽을 수 없습니다.'))})}
+async function migrateMatchGroups(){allGroups=await getAllGroupsDB();if(!allMatches.length)return;const byKey=new Map();allGroups.forEach(g=>byKey.set(`${g.date}|${g.shop}|${g.category}`,g));let changed=false;for(const m of allMatches){if(m.groupId&&allGroups.some(g=>g.id===m.groupId))continue;const date=normalizeDate(m),shop=(m.shop||'').trim(),category=m.category||'미니리그';const key=`${date}|${shop}|${category}`;let g=byKey.get(key);if(!g){g={date,shop,category,mode:category==='대회'?'TOURNAMENT':'ROUND',createdAt:m.createdAt||new Date().toISOString(),label:''};g.id=await dbGroupAdd(g);allGroups.push(g);byKey.set(key,g)}m.groupId=g.id;m.stage=m.stage||defaultStageForMode(g.mode,allMatches.filter(x=>x.groupId===g.id).length+1);await dbPut(m);changed=true}if(changed)allMatches=await getAllMatchesDB();allGroups=await getAllGroupsDB()}
+function defaultStageForMode(mode,n){if(mode==='TOURNAMENT')return n===1?'64강':n===2?'32강':n===3?'16강':n===4?'8강':n===5?'4강':n===6?'결승':'결승';return `${Math.max(1,n)}라운드`}
+function nextStageForGroup(gid,mode){const used=new Set(groupMatches(gid).map(m=>m.stage).filter(Boolean));if(mode==='TOURNAMENT'){const vals=['64강','32강','16강','8강','4강','결승'];return vals.find(v=>!used.has(v))||'결승'}for(let i=1;i<=20;i++){const v=`${i}라운드`;if(!used.has(v))return v}return '20라운드'}
+function stageOptions(mode,selected=''){const vals=mode==='TOURNAMENT'?['64강','32강','16강','8강','4강','결승']:Array.from({length:20},(_,i)=>`${i+1}라운드`);return vals.map(v=>`<option value="${v}" ${v===selected?'selected':''}>${v}</option>`).join('')}
+function groupMatches(gid){return sortMatches(allMatches.filter(m=>m.groupId===gid))}
+function matchingGroups(date,shop,category){return allGroups.filter(g=>g.date===date&&g.shop===shop&&g.category===category).sort((a,b)=>(b.id||0)-(a.id||0))}
+async function refreshEntryGroups(preferredId=null,autoStage=true){const date=$('entry-date').value,shop=$('entry-shop').value.trim(),category=$('entry-category').value;const sel=$('entry-group'),help=$('entry-group-help'),newGroupBtn=$('entry-new-group-btn');const isFriendly=category==='친선';const current=preferredId??sel.value;if(isFriendly){sel.innerHTML='<option value="NEW">묶음 없음 (개별 경기)</option>';sel.value='NEW';sel.disabled=true;if(newGroupBtn)newGroupBtn.disabled=true;help.textContent='친선전은 항상 개별 경기로 저장되며 묶음으로 표시되지 않습니다.'}else{sel.disabled=false;if(newGroupBtn)newGroupBtn.disabled=false;const candidates=matchingGroups(date,shop,category);sel.innerHTML='<option value="NEW">새 경기 묶음</option>'+candidates.map(g=>{const ms=groupMatches(g.id),w=ms.filter(m=>m.result==='WIN').length;const label=g.label?`${g.label} · ${w}승 ${ms.length-w}패`:`${isoToDisplay(g.date)} · ${g.shop} · ${g.category} · ${w}승 ${ms.length-w}패`;return `<option value="${g.id}">${escapeHTML(label)}</option>`}).join('');if(current&&current!=='NEW'&&candidates.some(g=>String(g.id)===String(current)))sel.value=String(current);else if(!editingId&&candidates.length)sel.value=String(candidates[0].id);else sel.value='NEW';const gid=sel.value==='NEW'?null:Number(sel.value),g=gid?allGroups.find(x=>x.id===gid):null;help.textContent=g?`${g.mode==='TOURNAMENT'?'토너먼트':'라운드제'} 묶음 · ${groupMatches(g.id).length}경기 기록됨`:(shop?'저장하면 새 경기 묶음이 만들어집니다.':'매장명을 입력하면 기존 묶음이 표시됩니다.')}const stage=$('entry-stage');stage.innerHTML=stageOptions(g?.mode||(category==='대회'?'TOURNAMENT':'ROUND'),g?((allMatches.find(m=>m.id===editingId)?.stage)||nextStageForGroup(g.id,g.mode)):nextStageForGroup(null,category==='대회'?'TOURNAMENT':'ROUND'));if(autoStage&&g&&!editingId)stage.value=nextStageForGroup(g.id,g.mode)}
+async function createNewGroupFromEntry(){const date=$('entry-date').value,shop=$('entry-shop').value.trim(),category=$('entry-category').value;if(!date||!shop){showToast('날짜와 매장명을 먼저 입력해주세요.');return}const mode=category==='대회'?'TOURNAMENT':'ROUND';const label=prompt('경기 묶음 이름을 입력하세요. 비워두면 날짜·매장·경기 유형으로 표시됩니다.','');if(label===null)return;const g={date,shop,category,mode,label:label.trim(),createdAt:new Date().toISOString()};const id=await dbGroupAdd(g);allGroups.push({...g,id});$('entry-group').value=String(id);await refreshEntryGroups(id,false);$('entry-group').value=String(id);showToast('새 경기 묶음을 만들었습니다.')}
+
+function getStore(mode){if(!db)throw new Error('데이터베이스가 초기화되지 않았습니다.');if(!db.objectStoreNames.contains('matches'))throw new Error('전적 저장소를 찾을 수 없습니다.');return db.transaction('matches',mode).objectStore('matches')}
+function dbAdd(entry){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matches','readwrite')}catch(e){rej(e);return}const r=tx.objectStore('matches').add(entry);let settled=false;r.onsuccess=()=>{if(!settled){settled=true;res(r.result)}};r.onerror=()=>{if(!settled){settled=true;rej(r.error)}};tx.onerror=()=>{if(!settled){settled=true;rej(tx.error||new Error('저장 트랜잭션 오류'))}};tx.onabort=()=>{if(!settled){settled=true;rej(tx.error||new Error('저장 트랜잭션이 중단되었습니다.'))}}})}
+function dbPut(entry){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matches','readwrite')}catch(e){rej(e);return}const r=tx.objectStore('matches').put(entry);let settled=false;r.onsuccess=()=>{};r.onerror=()=>{if(!settled){settled=true;rej(r.error)}};tx.oncomplete=()=>{if(!settled){settled=true;res()}};tx.onerror=()=>{if(!settled){settled=true;rej(tx.error||new Error('수정 트랜잭션 오류'))}};tx.onabort=()=>{if(!settled){settled=true;rej(tx.error||new Error('수정 트랜잭션이 중단되었습니다.'))}}})}
+function dbDelete(id){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matches','readwrite')}catch(e){rej(e);return}const r=tx.objectStore('matches').delete(id);let settled=false;r.onerror=()=>{if(!settled){settled=true;rej(r.error)}};tx.oncomplete=()=>{if(!settled){settled=true;res()}};tx.onerror=()=>{if(!settled){settled=true;rej(tx.error||new Error('삭제 트랜잭션 오류'))}};tx.onabort=()=>{if(!settled){settled=true;rej(tx.error||new Error('삭제 트랜잭션이 중단되었습니다.'))}}})}
+function getAllMatchesDB(){return new Promise((res,rej)=>{let tx;try{tx=db.transaction('matches','readonly')}catch(e){rej(e);return}const r=tx.objectStore('matches').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error||new Error('전적을 읽을 수 없습니다.'))})}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),2200)}
+function switchPage(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));$('page-'+page).classList.add('active');$('tab-'+page).classList.add('active');$('new-record-btn').style.display=page==='records'?'block':'none';if(page==='stats')renderStatistics();if(page==='data')renderDataSummary();window.scrollTo(0,0)}
+let pwaCurrentPage='records',pwaSkipHistory=false;
+function syncMobileNav(page){document.querySelectorAll('.mobile-nav button').forEach(x=>x.classList.remove('active'));const b=$('mobile-tab-'+page);if(b)b.classList.add('active')}
+const originalSwitchPage=switchPage;
+switchPage=function(page){originalSwitchPage(page);pwaCurrentPage=page;syncMobileNav(page);if(!pwaSkipHistory){history.pushState({page},'',location.href.split('#')[0]+'#'+page)}}
+window.addEventListener('popstate',()=>{const page=location.hash.replace('#','')||'records';pwaSkipHistory=true;switchPage(['records','stats','data'].includes(page)?page:'records');pwaSkipHistory=false});
+window.addEventListener('load',()=>{const page=location.hash.replace('#','');if(['records','stats','data'].includes(page)){pwaSkipHistory=true;switchPage(page);pwaSkipHistory=false}if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('PWA service worker 등록 실패',e))}});
+function setChoiceButton(group,value){const input=$(group==='result'?'entry-result':'entry-turn');if(input)input.value=value;document.querySelectorAll(`[data-choice-group="${group}"]`).forEach(btn=>btn.classList.toggle('active',btn.dataset.value===value))}function initChoiceButtons(){document.querySelectorAll('.choice-button').forEach(btn=>{btn.addEventListener('click',()=>{setChoiceButton(btn.dataset.choiceGroup,btn.dataset.value);saveDraft()})})}
+function openMatchEntryModal(id=null){editingId=id;const m=id?allMatches.find(x=>x.id===id):null;$('entry-modal-title').textContent=m?'전적 수정':'새 전적 입력';$('entry-save-btn').textContent=m?'수정 저장':'전적 저장하기';$('entry-date').value=m?normalizeDate(m):todayISO();$('entry-category').value=m?.category||'미니리그';$('entry-category-detail').value=m?.categoryDetail||'';setChoiceButton('result',m?.result||'WIN');setChoiceButton('turn',m?.turn||'FIRST');selectedMyStickers=m?.myStickers?.length?[...m.myStickers]:[6,25];selectedOpStickers=m?.opStickers?.length?[...m.opStickers]:[887,0];$('entry-my-prize').value=Number.isFinite(m?.myPrize)?m.myPrize:6;$('entry-op-prize').value=Number.isFinite(m?.opPrize)?m.opPrize:0;$('entry-shop').value=m?.shop||'';$('entry-tags').value=(m?.tags||[]).join(', ');$('entry-memo').value=m?.memo||'';updateStickerPreviews();$('match-modal').classList.add('active');const preferredGroup=m?.category==='친선'?null:(m?.groupId||null);refreshEntryGroups(preferredGroup,false);if(m?.groupId&&m?.category!=='친선'){const g=allGroups.find(x=>x.id===m.groupId);if(g)$('entry-stage').innerHTML=stageOptions(g.mode,m.stage||defaultStageForMode(g.mode,1))}saveDraft()}
+function closeMatchEntryModal(){if(!editingId)saveDraft();$('match-modal').classList.remove('active')}
+function setStickerBg(el,idx){if(idx===null||idx===undefined){el.style.backgroundPosition='0 0';return}const col=idx%SHEET_COLS,row=Math.floor(idx/SHEET_COLS);el.style.backgroundPosition=`-${col*SPRITE_WIDTH}px -${row*SPRITE_HEIGHT}px`}
+function updateStickerPreviews(){setStickerBg($('my-sticker-1'),selectedMyStickers[0]);setStickerBg($('my-sticker-2'),selectedMyStickers[1]);setStickerBg($('op-sticker-1'),selectedOpStickers[0]);setStickerBg($('op-sticker-2'),selectedOpStickers[1])}
+function openStickerPicker(target){currentPickerTarget=target;pickerTempSelection=[...(target==='my'?selectedMyStickers:selectedOpStickers)];updateTempSelectionUI();$('sticker-modal-title').textContent=target==='my'?'내 포켓몬 선택 (2개)':'상대 포켓몬 선택 (2개)';$('sticker-search-input').value='';$('sticker-modal').classList.add('active');currentRenderList=stickerData;visibleStickerCount=BATCH_SIZE;renderStickerBatch(true)}
+function closeStickerPicker(apply){if(apply&&pickerTempSelection.length!==2){showToast('포켓몬을 2개 선택해주세요.');return}if(apply){if(currentPickerTarget==='my')selectedMyStickers=[...pickerTempSelection];else selectedOpStickers=[...pickerTempSelection];updateStickerPreviews();saveDraft()}$('sticker-modal').classList.remove('active')}
+function updateTempSelectionUI(){setStickerBg($('temp-slot-1'),pickerTempSelection[0]);setStickerBg($('temp-slot-2'),pickerTempSelection[1]);$('picker-count').textContent=`${pickerTempSelection.length} / 2`}
+function removeTempSticker(i){pickerTempSelection.splice(i,1);updateTempSelectionUI()}
+function renderStickerBatch(reset=false){const c=$('sticker-grid-container');if(reset){c.scrollTop=0;c.innerHTML=''}const frag=document.createDocumentFragment();currentRenderList.slice(c.children.length,visibleStickerCount).forEach(item=>{const d=document.createElement('div');d.className='sticker-icon';setStickerBg(d,item.index);d.title=item.name;d.onclick=()=>selectStickerItem(item.index);frag.appendChild(d)});c.appendChild(frag)}
+function handleStickerScroll(){const c=$('sticker-grid-container');if(c.scrollTop+c.clientHeight>=c.scrollHeight-60&&visibleStickerCount<currentRenderList.length){visibleStickerCount=Math.min(visibleStickerCount+BATCH_SIZE,currentRenderList.length);renderStickerBatch(false)}}function handleStickerSearch(q){const v=q.trim().toLowerCase();currentRenderList=!v?stickerData:stickerData.filter(x=>/^\d+$/.test(v)?x.dexNum===parseInt(v,10):x.name.toLowerCase().includes(v));visibleStickerCount=BATCH_SIZE;renderStickerBatch(true)}function selectStickerItem(idx){if(pickerTempSelection.length<2)pickerTempSelection.push(idx);else pickerTempSelection[1]=idx;updateTempSelectionUI()}
+function validateEntry(){const date=$('entry-date').value,result=$('entry-result').value,my=Number($('entry-my-prize').value),op=Number($('entry-op-prize').value),shop=$('entry-shop').value.trim();if(!date){showToast('경기 날짜를 입력해주세요.');return false}if(!Number.isInteger(my)||my<0||my>6||!Number.isInteger(op)||op<0||op>6){showToast('프라이즈는 0~6 사이의 정수여야 합니다.');return false}if(!shop){showToast('매장명을 입력해주세요.');return false}if(result==='WIN'&&my<op){if(!confirm('승리인데 프라이즈가 상대보다 적습니다. 그래도 저장할까요?'))return false}if(result==='LOSS'&&my>op){if(!confirm('패배인데 프라이즈가 상대보다 많습니다. 그래도 저장할까요?'))return false}return true}
+async function saveMatchEntry(){if(!validateEntry())return;const btn=$('entry-save-btn');if(btn.disabled)return;btn.disabled=true;const tags=$('entry-tags').value.split(',').map(x=>x.trim()).filter(Boolean);try{if(!db)await initDB();const category=$('entry-category').value,isFriendly=category==='친선';let groupId=isFriendly?null:($('entry-group').value==='NEW'?null:Number($('entry-group').value));let group=groupId?allGroups.find(g=>g.id===groupId):null;if(!isFriendly&&!group){const date=$('entry-date').value,shop=$('entry-shop').value.trim(),mode=category==='대회'?'TOURNAMENT':'ROUND';group={date,shop,category,mode,label:'',createdAt:new Date().toISOString()};groupId=await dbGroupAdd(group);group.id=groupId;allGroups.push(group)}const entry={date:isoToDisplay($('entry-date').value),playedAt:$('entry-date').value,category,categoryDetail:$('entry-category-detail').value.trim(),result:$('entry-result').value,turn:$('entry-turn').value,myStickers:[...selectedMyStickers],opStickers:[...selectedOpStickers],myPrize:Number($('entry-my-prize').value),opPrize:Number($('entry-op-prize').value),shop:$('entry-shop').value.trim(),tags,memo:$('entry-memo').value.trim(),groupId,stage:isFriendly?'':$('entry-stage').value,updatedAt:new Date().toISOString()};if(editingId){entry.id=editingId;const old=allMatches.find(x=>x.id===editingId);entry.createdAt=old?.createdAt||new Date().toISOString();await dbPut(entry);showToast('전적이 수정되었습니다.')}else{entry.createdAt=new Date().toISOString();await dbAdd(entry);showToast('전적이 저장되었습니다.')}editingId=null;localStorage.removeItem('pokemonCardDraft');$('match-modal').classList.remove('active');await loadAndRenderMatches();resetEntryForm()}catch(e){console.error('전적 저장 오류:',e);showToast(`저장 실패: ${e?.message||'알 수 없는 오류'}`)}finally{btn.disabled=false}}
+function resetEntryForm(){$('entry-category-detail').value='';$('entry-group').innerHTML='<option value="NEW">새 경기 묶음</option>';$('entry-stage').innerHTML=stageOptions('ROUND','1라운드');setChoiceButton('result','WIN');setChoiceButton('turn','FIRST');$('entry-my-prize').value=6;$('entry-op-prize').value=0;$('entry-shop').value='';$('entry-tags').value='';$('entry-memo').value='';selectedMyStickers=[6,25];selectedOpStickers=[887,0];$('entry-date').value=todayISO();updateStickerPreviews();$('entry-modal-title').textContent='새 전적 입력';$('entry-save-btn').textContent='전적 저장하기';editingId=null}
+async function deleteMatch(id){if(!confirm('이 전적을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.'))return;try{await dbDelete(id);showToast('전적이 삭제되었습니다.');await loadAndRenderMatches()}catch(e){showToast('삭제 중 오류가 발생했습니다.')}}
+function escapeHTML(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function getFilteredMatches(list=allMatches){const cf=$('filter-category').value;return list.filter(m=>{const cat=m.category||'미니리그';if(cf==='MATCH_LEAGUE'&&cat!=='미니리그'||cf==='MATCH_FRIENDLY'&&cat!=='친선'||cf==='MATCH_TOURNAMENT'&&cat!=='대회'||cf==='EXCEPT_LEAGUE'&&cat==='미니리그'||cf==='EXCEPT_FRIENDLY'&&cat==='친선'||cf==='EXCEPT_TOURNAMENT'&&cat==='대회')return false;return true})}
+function sortMatches(list){return [...list].sort((a,b)=>{const da=normalizeDate(a),dbb=normalizeDate(b);if(dbb!==da)return dbb.localeCompare(da);return (b.id||0)-(a.id||0)})}
+
+function renderMatchList(){const c=$('match-list-container');c.innerHTML='';const filtered=sortMatches(getFilteredMatches());$('match-result-info').textContent=`현재 ${filtered.length}경기 표시 / 전체 ${allMatches.length}경기`;if(!filtered.length){c.innerHTML='<div class="empty-state">조건에 맞는 전적이 없습니다.</div>';return}const groups=new Map();filtered.forEach(m=>{const isFriendly=(m.category||'미니리그')==='친선';const gid=isFriendly?`friendly-${m.id}`:(m.groupId||`legacy-${m.id}`);if(!groups.has(gid))groups.set(gid,[]);groups.get(gid).push(m)});[...groups.entries()].forEach(([gid,ms])=>{const fallback=ms[0],isFriendly=(fallback.category||'미니리그')==='친선';if(isFriendly){const m=fallback,win=m.result==='WIN',detailId=`detail-${m.id}`,card=document.createElement('div');card.className=`match-card ${win?'win':'loss'}`;const tags=(m.tags||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join('');card.innerHTML=`<div class="match-header"><div><span class="match-type-tag">${escapeHTML(m.category||'친선')}</span><span>${escapeHTML(isoToDisplay(normalizeDate(m)))} · ${escapeHTML(m.shop||'매장 미입력')} · ${m.turn==='FIRST'?'선공':'후공'}</span></div><span class="match-badge ${win?'win':'loss'}">${win?'VICTORY':'DEFEAT'}</span></div><div class="match-body"><div class="team-box"><div class="sticker-icon" data-sticker="${Number(m.myStickers?.[0]??0)}"></div><div class="sticker-icon" data-sticker="${Number(m.myStickers?.[1]??0)}"></div></div><div class="vs-text">${Number(m.myPrize)||0} : ${Number(m.opPrize)||0}</div><div class="team-box"><div class="sticker-icon" data-sticker="${Number(m.opStickers?.[0]??0)}"></div><div class="sticker-icon" data-sticker="${Number(m.opStickers?.[1]??0)}"></div></div></div><div id="${detailId}" class="match-details"><div class="match-details-item">[날짜] ${escapeHTML(isoToDisplay(normalizeDate(m)))}</div>${m.categoryDetail?`<div class="match-details-item">[세부] ${escapeHTML(m.categoryDetail)}</div>`:''}<div class="match-details-item">[메모] ${escapeHTML(m.memo||'작성된 메모가 없습니다.')}</div>${tags?`<div class="tag-list">${tags}</div>`:''}<div class="match-actions"><button class="btn btn-small" onclick="event.stopPropagation();openMatchEntryModal(${m.id})">수정</button><button class="btn btn-danger btn-small" onclick="event.stopPropagation();deleteMatch(${m.id})">삭제</button></div></div>`;card.querySelectorAll('[data-sticker]').forEach(el=>setStickerBg(el,Number(el.dataset.sticker)));card.onclick=()=>$(detailId).classList.toggle('open');c.appendChild(card);return}const g=allGroups.find(x=>String(x.id)===String(gid)),category=fallback.category||'미니리그',date=normalizeDate(fallback),shop=fallback.shop||'매장 미입력',mode=g?.mode||(category==='대회'?'TOURNAMENT':'ROUND'),wins=ms.filter(m=>m.result==='WIN').length,loss=ms.length-wins;const card=document.createElement('div');card.className='group-card';const title=g?.label?escapeHTML(g.label):`${escapeHTML(isoToDisplay(date))} · ${escapeHTML(shop)} · ${escapeHTML(category)}`;const modeText=mode==='TOURNAMENT'?'토너먼트':'라운드제';card.innerHTML=`<div class="group-card-header"><div><div class="group-title">${title}</div><div class="group-summary">${modeText} · ${ms.length}경기 · ${wins}승 ${loss}패 · 승률 ${pct(wins,ms.length)}</div></div><span class="match-badge ${wins>=loss?'win':'loss'}">${wins>=loss?'GOOD':'RESULT'}</span></div><div class="group-records"></div>`;const list=card.querySelector('.group-records');const ordered=[...ms].sort((a,b)=>{const rank=(x)=>mode==='ROUND'?(parseInt(String(x.stage||'').match(/\d+/)?.[0])||999):['64강','32강','16강','8강','4강','결승'].indexOf(x.stage);const ra=rank(a),rb=rank(b);return ra-rb||(b.id||0)-(a.id||0)});ordered.forEach(m=>{const win=m.result==='WIN',detailId=`detail-${m.id}`,r=document.createElement('div');r.className=`match-card ${win?'win':'loss'} group-match-card`;const tags=(m.tags||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join('');const stage=m.stage&&m.stage!=='단계 미지정'?`<span class="match-type-tag">${escapeHTML(m.stage)}</span>`:'';r.innerHTML=`<div class="match-header"><div>${stage}<span class="match-type-tag">${escapeHTML(m.category||'미니리그')}</span><span>${escapeHTML(isoToDisplay(normalizeDate(m)))} · ${escapeHTML(m.shop||'매장 미입력')} · ${m.turn==='FIRST'?'선공':'후공'}</span></div><span class="match-badge ${win?'win':'loss'}">${win?'VICTORY':'DEFEAT'}</span></div><div class="match-body"><div class="team-box"><div class="sticker-icon" data-sticker="${Number(m.myStickers?.[0]??0)}"></div><div class="sticker-icon" data-sticker="${Number(m.myStickers?.[1]??0)}"></div></div><div class="vs-text">${Number(m.myPrize)||0} : ${Number(m.opPrize)||0}</div><div class="team-box"><div class="sticker-icon" data-sticker="${Number(m.opStickers?.[0]??0)}"></div><div class="sticker-icon" data-sticker="${Number(m.opStickers?.[1]??0)}"></div></div></div><div id="${detailId}" class="match-details"><div class="match-details-item">[날짜] ${escapeHTML(isoToDisplay(normalizeDate(m)))}</div>${m.categoryDetail?`<div class="match-details-item">[세부] ${escapeHTML(m.categoryDetail)}</div>`:''}<div class="match-details-item">[메모] ${escapeHTML(m.memo||'작성된 메모가 없습니다.')}</div>${tags?`<div class="tag-list">${tags}</div>`:''}<div class="match-actions"><button class="btn btn-small" onclick="event.stopPropagation();openMatchEntryModal(${m.id})">수정</button><button class="btn btn-danger btn-small" onclick="event.stopPropagation();deleteMatch(${m.id})">삭제</button></div></div>`;r.querySelectorAll('[data-sticker]').forEach(el=>setStickerBg(el,Number(el.dataset.sticker)));r.onclick=()=>$(detailId).classList.toggle('open');list.appendChild(r)});c.appendChild(card)})}
+function calculateBasicStats(matches){const total=matches.length,wins=matches.filter(m=>m.result==='WIN').length;const recent=sortMatches(matches).slice(0,10);const rw=recent.filter(m=>m.result==='WIN').length;let streak='-';if(recent.length){let n=0,last=recent[0].result;for(const m of recent){if(m.result===last)n++;else break}streak=`${last==='WIN'?'연승':'연패'} ${n}`}$('stat-total').textContent=total;const winrate=total?wins/total*100:0;const wr=$('stat-winrate');wr.textContent=total?`${winrate.toFixed(1)}%`:'0%';wr.classList.remove('winrate-tier-0','winrate-tier-20','winrate-tier-40','winrate-tier-60','winrate-tier-80','winrate-tier-100');const tier=winrate>=100?'100':winrate>=80?'80':winrate>=60?'60':winrate>=40?'40':winrate>=20?'20':'0';wr.classList.add(`winrate-tier-${tier}`);$('stat-recent').textContent=recent.length?`${rw}승 ${recent.length-rw}패`:'-';$('stat-streak').textContent=streak}
+function renderDataSummary(){$('data-summary').textContent=`현재 ${allMatches.length}개의 전적 · ${allGroups.length}개의 경기 묶음이 저장되어 있습니다.`}
+async function loadAndRenderMatches(){allMatches=await getAllMatchesDB();allGroups=await getAllGroupsDB();await migrateMatchGroups();calculateBasicStats(allMatches);renderMatchList();renderDataSummary();if($('page-stats').classList.contains('active'))renderStatistics()}
+
+function dateRangeMatches(){const from=$('stats-date-from').value,to=$('stats-date-to').value;return allMatches.filter(m=>{const d=normalizeDate(m);return(!from||d>=from)&&(!to||d<=to)})}
+function pct(w,n){return n?`${(w/n*100).toFixed(1)}%`:'-'}function streakInfo(matches){const s=sortMatches(matches);if(!s.length)return{current:'-',maxW:0,maxL:0};let cur=0,last=s[0].result;for(const m of s){if(m.result===last)cur++;else break}let maxW=0,maxL=0,w=0,l=0;for(const m of [...s].reverse()){if(m.result==='WIN'){w++;l=0;maxW=Math.max(maxW,w)}else{l++;w=0;maxL=Math.max(maxL,l)}}return{current:`${last==='WIN'?'연승':'연패'} ${cur}`,maxW,maxL}}
+function renderStatistics(){const ms=dateRangeMatches(),wins=ms.filter(m=>m.result==='WIN').length,loss=ms.length-wins,st=streakInfo(ms),recent=sortMatches(ms).slice(0,10),rw=recent.filter(m=>m.result==='WIN').length;$('stats-scope').textContent=`현재 ${ms.length}경기 기준 통계${$('stats-date-from').value||$('stats-date-to').value?' · 선택 기간 적용':''}`;$('overall-metrics').innerHTML=[['경기 수',ms.length],['승률',pct(wins,ms.length)],['최근 10경기',recent.length?`${rw}승 ${recent.length-rw}패`:'-'],['현재 흐름',st.current],['최장 연승',st.maxW?`${st.maxW}연승`:'-'],['최장 연패',st.maxL?`${st.maxL}연패`:'-']].map(x=>`<div class="metric"><div class="metric-label">${x[0]}</div><div class="metric-value">${x[1]}</div></div>`).join('');renderTurnStats(ms);renderCategoryStats(ms);renderMonthlyStats(ms);renderPrizeStats(ms);renderShopStats(ms);renderCrossStats(ms)}
+function renderTurnStats(ms){const rows=['FIRST','SECOND'].map(t=>{const a=ms.filter(m=>m.turn===t),w=a.filter(m=>m.result==='WIN').length;return [t==='FIRST'?'선공':'후공',a.length,w,a.length-w,pct(w,a.length)]});$('turn-stats').innerHTML=`<table class="stat-table"><thead><tr><th>구분</th><th>경기</th><th>승</th><th>패</th><th>승률</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody></table>`;if(rows[0][1]&&rows[1][1])$('turn-stats').insertAdjacentHTML('beforeend',`<div class="result-info" style="margin-top:8px">선공-후공 승률 차이: <b>${((rows[0][2]/rows[0][1]-rows[1][2]/rows[1][1])*100).toFixed(1)}%p</b></div>`)}
+function renderCategoryStats(ms){const cats=['미니리그','친선','대회'];const rows=cats.map(c=>{const a=ms.filter(m=>(m.category||'미니리그')===c),w=a.filter(m=>m.result==='WIN').length;return[c,a.length,w,a.length-w,pct(w,a.length)]});$('category-stats').innerHTML=`<table class="stat-table"><thead><tr><th>경기 유형</th><th>경기</th><th>승</th><th>패</th><th>승률</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody></table>`}
+function renderMonthlyStats(ms){const map={};ms.forEach(m=>{const d=normalizeDate(m),key=d.slice(0,7);if(!map[key])map[key]=[];map[key].push(m)});const keys=Object.keys(map).sort();if(!keys.length){$('monthly-chart').innerHTML='<div class="empty-state">표시할 경기 데이터가 없습니다.</div>';return}const vals=keys.map(k=>{const a=map[k],w=a.filter(m=>m.result==='WIN').length;return{key:k,label:k.replace('-','.'),rate:w/a.length*100,count:a.length}});$('monthly-chart').innerHTML=`<div class="chart-wrap">${vals.map(v=>`<div class="chart-col"><div class="chart-value">${v.rate.toFixed(0)}%</div><div class="chart-bar" style="height:${Math.max(2,v.rate)}%" title="${v.label}: ${v.rate.toFixed(1)}% (${v.count}경기)"></div><div class="chart-label">${v.label}</div></div>`).join('')}</div>`}
+function renderPrizeStats(ms){if(!ms.length){$('prize-stats').innerHTML='<div class="empty-state">표시할 경기 데이터가 없습니다.</div>';return}const avg=a=>ms.reduce((s,m)=>s+(Number(m[a])||0),0)/ms.length,avgMy=avg('myPrize'),avgOp=avg('opPrize');const dist={};ms.forEach(m=>{const k=`${m.myPrize??0}:${m.opPrize??0}`;dist[k]=(dist[k]||0)+1});const top=Object.entries(dist).sort((a,b)=>b[1]-a[1]).slice(0,6);$('prize-stats').innerHTML=`<div class="metric-grid"><div class="metric"><div class="metric-label">평균 내 프라이즈</div><div class="metric-value">${avgMy.toFixed(2)}</div></div><div class="metric"><div class="metric-label">평균 상대 프라이즈</div><div class="metric-value">${avgOp.toFixed(2)}</div></div><div class="metric"><div class="metric-label">평균 프라이즈 차이</div><div class="metric-value">${(avgMy-avgOp).toFixed(2)}</div></div></div><div style="margin-top:12px;font-size:12px;color:#8b6b23">주요 최종 스코어</div><table class="stat-table"><tbody>${top.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}경기</td></tr>`).join('')}</tbody></table>`}
+function renderShopStats(ms){const map={};ms.forEach(m=>{const s=m.shop?.trim()||'매장 미입력';if(!map[s])map[s]=[];map[s].push(m)});const rows=Object.entries(map).filter(x=>x[1].length>=2).map(([s,a])=>{const w=a.filter(m=>m.result==='WIN').length;return[s,a.length,w,a.length-w,pct(w,a.length)]}).sort((a,b)=>b[1]-a[1]).slice(0,10);$('shop-stats').innerHTML=rows.length?`<table class="stat-table"><thead><tr><th>매장</th><th>경기</th><th>승</th><th>패</th><th>승률</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHTML(r[0])}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody></table><div class="result-info">2경기 이상인 매장만 표시합니다.</div>`:'<div class="empty-state">2경기 이상 기록된 매장이 없습니다.</div>'}
+function renderCrossStats(ms){const cats=['미니리그','친선','대회'];$('cross-stats').innerHTML=`<table class="stat-table"><thead><tr><th>유형</th><th>선공</th><th>후공</th></tr></thead><tbody>${cats.map(c=>{const a=ms.filter(m=>(m.category||'미니리그')===c);const f=a.filter(m=>m.turn==='FIRST'),s=a.filter(m=>m.turn==='SECOND');return`<tr><td>${c}</td><td>${f.length?`${pct(f.filter(m=>m.result==='WIN').length,f.length)} (${f.length})`:'-'}</td><td>${s.length?`${pct(s.filter(m=>m.result==='WIN').length,s.length)} (${s.length})`:'-'}</td></tr>`}).join('')}</tbody></table>`}
+function setStatsPreset(v){const t=todayISO();if(v==='ALL'){$('stats-date-from').value='';$('stats-date-to').value=''}else if(v==='YEAR'){$('stats-date-from').value=`${t.slice(0,4)}-01-01`;$('stats-date-to').value=t}else{const d=new Date();d.setDate(d.getDate()-(Number(v)-1));$('stats-date-from').value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;$('stats-date-to').value=t}renderStatistics()}
+function exportData(){const payload={version:3,exportedAt:new Date().toISOString(),matches:allMatches,matchGroups:allGroups};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`pokemon-card-record-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);showToast('백업 파일을 생성했습니다.')}
+async function importData(file){if(!file)return;try{const text=await file.text(),data=JSON.parse(text),incoming=Array.isArray(data)?data:data.matches,incomingGroups=Array.isArray(data?.matchGroups)?data.matchGroups:[];if(!Array.isArray(incoming))throw new Error('invalid');let added=0,skipped=0;const importedGroupMap=new Map();for(const rawG of incomingGroups){const g={...rawG};delete g.id;const existing=allGroups.find(x=>x.date===g.date&&x.shop===g.shop&&x.category===g.category&&x.label===g.label);if(existing){importedGroupMap.set(rawG.id,existing.id);continue}const id=await dbGroupAdd(g);importedGroupMap.set(rawG.id,id)}allGroups=await getAllGroupsDB();for(const raw of incoming){const m={...raw};if(!m.result||!m.turn)continue;const same=allMatches.some(x=>m.id!=null&&x.id===m.id);if(same){skipped++;continue}delete m.id;if(m.groupId&&importedGroupMap.has(m.groupId))m.groupId=importedGroupMap.get(m.groupId);else{const date=normalizeDate(m),shop=(m.shop||'').trim(),category=m.category||'미니리그';let g=allGroups.find(x=>x.date===date&&x.shop===shop&&x.category===category);if(!g){g={date,shop,category,mode:category==='대회'?'TOURNAMENT':'ROUND',label:'',createdAt:new Date().toISOString()};g.id=await dbGroupAdd(g);allGroups.push(g)}m.groupId=g.id}if(!m.stage)m.stage=defaultStageForMode(allGroups.find(g=>g.id===m.groupId)?.mode||'ROUND',1);await dbAdd(m);added++}await loadAndRenderMatches();showToast(`${added}개 복원 완료 · ${skipped}개 중복 건너뜀`)}catch(e){console.error(e);showToast('복원 파일을 읽지 못했습니다.')}}
+async function deleteAllMatches(){if(!allMatches.length){showToast('삭제할 전적이 없습니다.');return}if(!confirm(`총 ${allMatches.length}개의 전적을 모두 삭제하시겠습니까?`))return;if(!confirm('정말로 전체 삭제하시겠습니까? 백업이 없다면 복구할 수 없습니다.'))return;try{await new Promise((res,rej)=>{const tx=db.transaction('matches','readwrite');const r=tx.objectStore('matches').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});await loadAndRenderMatches();showToast('전체 전적을 삭제했습니다.')}catch(e){showToast('전체 삭제 중 오류가 발생했습니다.')}}
+function saveDraft(){if(!$('match-modal').classList.contains('active'))return;const d={date:$('entry-date').value,category:$('entry-category').value,categoryDetail:$('entry-category-detail').value,result:$('entry-result').value,turn:$('entry-turn').value,myPrize:$('entry-my-prize').value,opPrize:$('entry-op-prize').value,shop:$('entry-shop').value,tags:$('entry-tags').value,memo:$('entry-memo').value,groupId:$('entry-group').value,stage:$('entry-stage').value};localStorage.setItem('pokemonCardDraft',JSON.stringify(d))}
+function loadDraft(){try{const d=JSON.parse(localStorage.getItem('pokemonCardDraft')||'null');if(!d)return;const use=confirm('작성 중이던 전적이 있습니다. 불러오시겠습니까?');if(!use){localStorage.removeItem('pokemonCardDraft');return}Object.entries(d).forEach(([k,v])=>{const el=$('entry-'+k);if(el)el.value=v});if(d.result)setChoiceButton('result',d.result);if(d.turn)setChoiceButton('turn',d.turn)}catch{localStorage.removeItem('pokemonCardDraft')}}
+window.addEventListener('load',async()=>{try{validateAndRepairPokedex();await initDB();$('filter-category').addEventListener('change',renderMatchList);['stats-date-from','stats-date-to'].forEach(id=>$(id).addEventListener('change',renderStatistics));['entry-date','entry-shop'].forEach(id=>$(id).addEventListener('input',()=>{refreshEntryGroups();saveDraft()}));$('entry-category').addEventListener('change',()=>{refreshEntryGroups();saveDraft()});$('entry-group').addEventListener('change',()=>{const g=allGroups.find(x=>String(x.id)===String($('entry-group').value));$('entry-stage').innerHTML=stageOptions(g?.mode||($('entry-category').value==='대회'?'TOURNAMENT':'ROUND'),g?nextStageForGroup(g.id,g.mode):defaultStageForMode($('entry-category').value==='대회'?'TOURNAMENT':'ROUND',1));saveDraft()});['entry-category-detail','entry-my-prize','entry-op-prize','entry-tags','entry-memo','entry-stage'].forEach(id=>$(id).addEventListener('input',saveDraft));initChoiceButtons();await loadAndRenderMatches();loadDraft()}catch(e){console.error(e);$('dex-status-banner').innerHTML='<span>앱 초기화 중 오류가 발생했습니다. 브라우저의 IndexedDB 사용을 확인해주세요.</span>'}});
+</script>
+<nav class="mobile-nav" aria-label="주요 메뉴">
+<button id="mobile-tab-records" class="active" type="button" onclick="switchPage('records')"><span class="nav-icon">▤</span><span>전적</span></button>
+<button id="mobile-tab-stats" type="button" onclick="switchPage('stats')"><span class="nav-icon">◈</span><span>통계</span></button>
+<button id="mobile-tab-data" type="button" onclick="switchPage('data')"><span class="nav-icon">◇</span><span>데이터</span></button>
+</nav>
+</body></html>
